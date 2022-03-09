@@ -65,8 +65,8 @@ function Login() {
                                     </div>
                                     <div className="d-flex box-btn">
                                         <div className="form-check m-3">
-                                            <input className="form-check-input" name="remember" type="checkbox" />
-                                            <label className="form-check-label" >
+                                            <input className="form-check-input" name="remember" type="checkbox" id="remember" />
+                                            <label className="form-check-label" htmlFor="remember" >
                                                 Lưu đăng nhập
                                             </label>
                                             </div>

@@ -6,7 +6,7 @@ import Footer  from "./../../layouts/admin/Footer";
 import Navbar  from "./../../layouts/admin/Navbar";
 import Sidebar  from "./../../layouts/admin/Sidebar";
 
-function Customers() {
+function Orders() {
     return (        
     <div className="sb-nav-fixed">
             <Navbar />
@@ -19,12 +19,11 @@ function Customers() {
                         <main>
                             <div className="container-fluid px-4"> 
 
-
                                 <div className="card mb-4  mt-4">
                                     <div className="card-header">
                                         <span>
                                         <i className="fas fa-table me-1"></i>
-                                        Danh sách khách hàng
+                                        Danh sách đơn hàng
                                         </span>
                                     </div>
                                     <div className="card-body">
@@ -32,12 +31,12 @@ function Customers() {
                                             <table className="table">
                                                 <thead>
                                                     <tr>
-                                                        <th>#</th>
-                                                        <th>Họ tên</th>
-                                                        <th>Email</th>
-                                                        <th>Địa chỉ</th>
-                                                        <th>Điện thoại</th>
-                                                        <th className="text-center">Thao tác</th>
+                                                        <th>Mã HD</th>
+                                                        <th>Khách hàng</th>
+                                                        <th>Tổng tiền</th>
+                                                        <th>Trạng thái</th>
+                                                        <th>Ngày tạo</th>
+                                                        <th>Thao tác</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -47,11 +46,7 @@ function Customers() {
                                                         <td>Edinburgh</td>
                                                         <td>61</td>
                                                         <td>2011/04/25</td>
-                                                        <td className="text-center">
-                                                            <span className='icon_btn'>
-                                                                <i class="fa-solid fa-pencil"></i>
-                                                            </span>
-                                                        </td>
+                                                        <td>$320,800</td>
                                                     </tr>
                                                 </tbody>
                                             </table>
@@ -69,4 +64,4 @@ function Customers() {
     );
 }
 
-export default Customers;
+export default Orders;

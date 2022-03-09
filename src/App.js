@@ -7,11 +7,12 @@ import {
 import axios from 'axios';
 
 import MasterLayout from './layouts/admin/MasterLayout';  
-import Dashboard from './components/admin/Dashboard';
+
 import Products from './components/admin/Products';
 import Customers from './components/admin/Customers';
 import Users from './components/admin/Users';
 import Login from './components/auth/Login';
+import Orders from './components/admin/Orders';
 
 
 axios.defaults.baseURL = 'http://localhost:8000/';
@@ -28,8 +29,9 @@ function App() {
           {/* <Route path="/admin" name="Admin" render={(props) => <MasterLayout {...props} />} /> */}
           <Route path="/login" name="Login" element={<Login />} />
 
-          <Route path="/admin" name="Admin" element={<MasterLayout />} />
-          <Route path="/admin/dashboard" name="Dashboard" element={<Dashboard />} />
+          <Route path="/" name="Admin" element={<Orders />} />
+          <Route path="/admin" name="Admin" element={<Orders />} />
+          <Route path="/admin/order-management" name="Admin" element={<Orders />} />
           <Route path="/admin/product-management" name="Products" element={<Products />} />
           <Route path="/admin/customer-management" name="Customers" element={<Customers />} />
           <Route path="/admin/user-management" name="Users" element={<Users />} />

@@ -2,3 +2,6 @@
     align-items: center;
     justify-content: center;
 }
+.btn-login {
+    border-radius: 20px;
+}
