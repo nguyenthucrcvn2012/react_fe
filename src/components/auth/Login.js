@@ -8,12 +8,13 @@ function Login() {
     const [inputLogin, setLogin] = useState({
         email: '',
         password: '',
-        error_list: []
+        error_list: [],
+        message: ''
     });
 
     const handleInput = (e) => {
-        e.persist()
-        setLogin({...inputLogin, [e.target.name]: e.target.value})
+        e.persist();
+        setLogin({...inputLogin, [e.target.name]: e.target.value});
     }
 
     const loginSubmit = (e) => {
@@ -28,10 +29,10 @@ function Login() {
             axios.post(`/api/login`, data).then(res => {
                 if(res.data.status === 200)
                 {
-
+                    console.log(res.data)
                 }
                 else if(res.data.status === 401){
-
+                    setLogin({...inputLogin, message: res.data.message})
                 }
                 else{
                     setLogin({...inputLogin, error_list: res.data.validation_errors})
@@ -48,17 +49,18 @@ function Login() {
                         <div className="card">
                             <div className="card-header text-center">
                                 <h4>Đăng nhập</h4>
+                                <span className="text-danger">{inputLogin.message}</span>
                             </div>
                             <div className="card-body">
                                 <form onSubmit={loginSubmit}>
                                     <div className="mb-3">
                                         <label htmlFor="">Tài khoản</label>
-                                        <input type="text" name="email" value={inputLogin.email} onChange={(e) => handleInput()} className="form-control" />
+                                        <input type="text" name="email" value={inputLogin.email} onChange={handleInput} className="form-control" />
                                         <span className="text-danger">{inputLogin.error_list.email}</span>
                                     </div>
                                     <div className="mb-3">
                                         <label htmlFor="">Mật khẩu</label>
-                                        <input type="password" name="password" value={inputLogin.password}onChange={(e) => handleInput()}  className="form-control" />
+                                        <input type="password" name="password" value={inputLogin.password} onChange={handleInput}  className="form-control" />
                                         <span className="text-danger">{inputLogin.error_list.password}</span>
                                     </div>
                                     <div className="d-flex box-btn">
