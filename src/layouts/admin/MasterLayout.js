@@ -1,5 +1,6 @@
 import React from "react";
 import {
+    BrowserRouter as Router,
     Routes,
     Route,
     useNavigate,
@@ -14,6 +15,12 @@ import Navbar  from "./Navbar";
 import Sidebar  from "./Sidebar";
 
 import routes from "../../routes/routers";
+
+
+import Dashboard from '../../components/admin/Dashboard';
+import Products from '../../components/admin/Products';
+import Customers from '../../components/admin/Customers';
+import Users from '../../components/admin/Users';
 
 const MasterLayout = () => {
 
@@ -31,13 +38,12 @@ const MasterLayout = () => {
                     <main>
                         <div className="container-fluid px-4">  
                             <Routes>
-                                {routes.map((route, idx) => {
+                                {/* {routes.map((route, idx) => {
                                     return (
                                         route.component && (
                                             <Route 
                                                 key={idx}
                                                 path={route.path}
-                                                exact={route.exact}
                                                 name={route.name}
                                                 render={(props) => (
                                                     <route.component {...props} />
@@ -45,8 +51,12 @@ const MasterLayout = () => {
                                             />
                                         )
                                     )
-                                })}
-                                <Navigate from="/admin" to="/admin/dashboard" />
+                                })} */}
+                                <Route path="/admin/dashboard" element={<Dashboard />} />
+                                <Route path="/admin/customers" element={<Customers />} />
+                                <Route path="/admin/products" element={<Products />} />
+                                <Route path="/admin/users" element={<Users />} />
+                                <Route path="/admin" element={<Navigate replace to="/admin/dashboard" />} />
                             </Routes>
                         </div>
                     </main>
