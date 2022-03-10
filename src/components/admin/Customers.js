@@ -26,35 +26,35 @@ function Customers() {
                         <tr>
                             <th scope="col">Tên</th>
                             <th scope="col">
-                                <input type="email" class="form-control" placeholder="Nhập họ tên" />
+                                <input type="email" className="form-control" placeholder="Nhập họ tên" />
                                 <span className="text-alert">Nhập họ tên</span>
                             </th>
                         </tr>
                         <tr>
                             <th scope="row">Email</th>
                             <th scope="col">
-                                <input type="email" class="form-control" placeholder="Nhập email" />
+                                <input type="email" className="form-control" placeholder="Nhập email" />
                                 <span className="text-alert">Nhập họ tên</span>
                             </th>
                         </tr>
                         <tr>
                             <th scope="row">Mật khẩu</th>
                             <th scope="col">
-                                <input type="email" class="form-control" placeholder="Nhập mật khẩu" />
+                                <input type="email" className="form-control" placeholder="Nhập mật khẩu" />
                                 <span className="text-alert">Nhập họ tên</span>
                             </th>
                         </tr>
                         <tr>
                             <th scope="row">Xác nhận</th>
                             <th scope="col">
-                                <input type="email" class="form-control" placeholder="Xác nhận nhận mật khẩu" />
+                                <input type="email" className="form-control" placeholder="Xác nhận nhận mật khẩu" />
                                 <span className="text-alert">Nhập họ tên</span>
                             </th>
                         </tr>
                         <tr>
                             <th scope="row">Trạng thái</th>
                             <th scope="col">
-                            <input class="form-check-input" type="checkbox"  />
+                            <input className="form-check-input" type="checkbox"  />
                             </th>
                         </tr>
                     </table>
@@ -111,7 +111,7 @@ function Customers() {
                                                         <td>2011/04/25</td>
                                                         <td className="text-center">
                                                             <span className='icon_btn'>
-                                                                <i class="fa-solid fa-pencil"></i>
+                                                                <i className="fa-solid fa-pencil"></i>
                                                             </span>
                                                         </td>
                                                     </tr>
