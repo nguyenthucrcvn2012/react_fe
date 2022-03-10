@@ -1,6 +1,5 @@
 import React from 'react'
 
-import "./../../../src/assets/css/admin.css";
 
 import Footer  from "./../../layouts/admin/Footer";
 import Navbar  from "./../../layouts/admin/Navbar";

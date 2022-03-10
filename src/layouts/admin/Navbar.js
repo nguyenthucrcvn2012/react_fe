@@ -3,6 +3,9 @@ import { Link } from "react-router-dom"
 
 const Navbar = () => {
 
+    let user = localStorage.getItem('auth_username');
+
+
     return (
        
         <nav className="sb-topnav navbar navbar-expand navbar-dark bg-dark">
@@ -16,7 +19,9 @@ const Navbar = () => {
             <ul className="navbar-nav ms-auto ms-md-0 me-3 me-lg-4">
                 <li className="nav-item dropdown">
                     <Link className="nav-link " id="navbarDropdown" to="#" role="button"
-                     data-bs-toggle="dropdown" aria-expanded="false"><i className="fas fa-user fa-fw"></i>Xin chào Nguyen Thuc</Link>
+                     data-bs-toggle="dropdown" aria-expanded="false">
+                         <i className="fas fa-user fa-fw">
+                        </i>{user}</Link>
                 </li>
             </ul>
             

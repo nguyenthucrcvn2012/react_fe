@@ -24,14 +24,63 @@
     align-items: center;
 }
 .btn-add{
-    cursor: pointer;
-    padding: 5px 10px;
-    border-radius: 20px;
-    background: #1abc9c;
-    color: #fff;
-    font-size: 0.86rem;
-    box-shadow: 1px 1px 6px 2px #16a0853b;
+    cursor: pointer !important;
+    padding: 5px 10px !important;
+    background: #1abc9c !important;
+    color: #fff !important;
+    font-size: 0.86rem !important;
+    box-shadow: 1px 1px 6px 2px #16a0853b !important;
+    border-color: #1abc9c !important;
+}
+
+.btn{
+    padding: 5px 10px !important;
+    border-radius: 25px !important;
 }
 .btn.btn-search {
     border-radius: 20px;
+    padding: 6px 10px;
+}
+
+.nav-link.logout {
+    cursor: pointer;
+}
+
+table{
+    border-collapse: separate !important;
+    border-spacing:0 0.5em !important;
+}
+
+.text-alert {
+    font-size: 0.7rem;
+    font-style: italic;
+    color: #ff0000;
+    font-weight: 500;
+}
+
+.frm-product .modal-dialog{
+    max-width: 100%;
+}
+
+.image-review{
+    padding: 5px;
+    margin: auto;
+    border: 1px dashed #3fff00;
+}
+.image-review img{
+    width: 100%;
+    display: block;
+    object-fit: contain;
+}
+
+.box-upload-image{
+    display: flex;
+    overflow: hidden;
+}
+.box-upload-image button{
+    font-size: 0.8rem;
+}
+
+th{
+    vertical-align: top;
 }

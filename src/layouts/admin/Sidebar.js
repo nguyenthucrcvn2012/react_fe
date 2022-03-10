@@ -1,13 +1,50 @@
 import React from "react";
 
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
+import axios from 'axios';
+import Swal from 'sweetalert2'
 
 const Sidebar = () => {
 
-    return (
-       
-        <div id="layoutSidenav_nav">
+    const navigate = useNavigate();
 
+    const LogoutSubmit = (e) => {
+        
+        e.preventDefault();
+        axios.get(`/sanctum/csrf-cookie`).then(response => {
+
+            axios.post(`/api/logout`).then(res => {
+               
+                if(res.data.status === 200)
+                {
+                    // Remove store data
+                    localStorage.removeItem('auth_username', res.data.username);
+                    localStorage.removeItem('auth_token', res.data.token);
+                    Swal.fire(
+                        'Đăng xuất',
+                        'Thành công!',
+                        'success'
+                      )
+                    navigate('/login');
+                }
+                else{
+
+                }
+            })
+        });
+    }
+
+    if(!localStorage.getItem('auth_token '))
+    {
+
+    }
+    else {
+
+    }
+
+
+    return (
+        <div id="layoutSidenav_nav">
             <nav className="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
                 <div className="sb-sidenav-menu">
                     <div className="nav">
@@ -27,10 +64,11 @@ const Sidebar = () => {
                             <div className="sb-nav-link-icon"><i className="fas fa-table"></i></div>
                             Người dùng
                         </Link>
-                        <Link className="nav-link" to="/logout">
-                            <div className="sb-nav-link-icon"><i className="fas fa-table"></i></div>
+                        <span className="nav-link logout" onClick={LogoutSubmit}>
+                            <div className="sb-nav-link-icon"><i className="fas fa-table"></i>
+                            </div>
                             Đăng xuất
-                        </Link>
+                        </span>
                     </div>
                 </div>
             </nav>

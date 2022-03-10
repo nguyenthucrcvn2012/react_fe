@@ -1,14 +1,75 @@
-import React from 'react'
+import React, {useState} from 'react'
+import { Modal, Button } from "react-bootstrap";
 
-import "./../../../src/assets/css/admin.css";
+
 
 import Footer  from "./../../layouts/admin/Footer";
 import Navbar  from "./../../layouts/admin/Navbar";
 import Sidebar  from "./../../layouts/admin/Sidebar";
 
 function Customers() {
+    const [show, setShow] = useState(false);
+
+    const handleClose = () => setShow(false);
+    const handleShow = () => setShow(true);
+
     return (        
     <div className="sb-nav-fixed">
+        <form>
+            <Modal show={show} onHide={handleClose}>
+                <Modal.Header closeButton>
+                <Modal.Title>Thêm khách hàng</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+
+                    <table className="w-100">
+                        <tr>
+                            <th scope="col">Tên</th>
+                            <th scope="col">
+                                <input type="email" class="form-control" placeholder="Nhập họ tên" />
+                                <span className="text-alert">Nhập họ tên</span>
+                            </th>
+                        </tr>
+                        <tr>
+                            <th scope="row">Email</th>
+                            <th scope="col">
+                                <input type="email" class="form-control" placeholder="Nhập email" />
+                                <span className="text-alert">Nhập họ tên</span>
+                            </th>
+                        </tr>
+                        <tr>
+                            <th scope="row">Mật khẩu</th>
+                            <th scope="col">
+                                <input type="email" class="form-control" placeholder="Nhập mật khẩu" />
+                                <span className="text-alert">Nhập họ tên</span>
+                            </th>
+                        </tr>
+                        <tr>
+                            <th scope="row">Xác nhận</th>
+                            <th scope="col">
+                                <input type="email" class="form-control" placeholder="Xác nhận nhận mật khẩu" />
+                                <span className="text-alert">Nhập họ tên</span>
+                            </th>
+                        </tr>
+                        <tr>
+                            <th scope="row">Trạng thái</th>
+                            <th scope="col">
+                            <input class="form-check-input" type="checkbox"  />
+                            </th>
+                        </tr>
+                    </table>
+                </Modal.Body>
+                <Modal.Footer>
+                <Button variant="secondary" onClick={handleClose}>
+                    Đóng
+                </Button>
+                <Button variant="primary" onClick={handleClose}>
+                    Lưu
+                </Button>
+                </Modal.Footer>
+            </Modal>
+        </form>
+
             <Navbar />
 
                 <div id="layoutSidenav">
@@ -26,6 +87,7 @@ function Customers() {
                                         <i className="fas fa-table me-1"></i>
                                         Danh sách khách hàng
                                         </span>
+                                        <Button className="btn-add" onClick={handleShow}><i className="fa-solid fa-plus"></i> Thêm mới</Button>
                                     </div>
                                     <div className="card-body">
                                         <div className="table-responsive">

@@ -5,3 +5,7 @@
 .btn-login {
     border-radius: 20px;
 }
+
+.card-header.login {
+    justify-content: center;
+}

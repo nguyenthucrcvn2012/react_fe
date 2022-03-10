@@ -7,8 +7,8 @@ import React from "react";
 //     Navigate
 // } from 'react-router-dom';
 
-import "../../assets/css/styles.css";
-import "../../assets/js/scripts";
+// import "../../assets/css/styles.css";
+// import "../../assets/js/scripts";
 
 import Footer  from "./Footer";
 import Navbar  from "./Navbar";
@@ -37,7 +37,6 @@ const MasterLayout = () => {
                 <div id="layoutSidenav_content">
                     <main>
                         <div className="container-fluid px-4">  
-                            Admin
                             {/* <Routes> */}
                                 {/* {routes.map((route, idx) => {
                                     return (

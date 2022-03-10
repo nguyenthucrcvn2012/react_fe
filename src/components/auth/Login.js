@@ -1,15 +1,17 @@
 import React, {useState} from 'react'
+import { useNavigate } from 'react-router-dom';
 
 import "../../assets/css/auth.css";
+import Swal from 'sweetalert2'
 import axios from 'axios';
 
 function Login() {
-
+    const navigate = useNavigate();
     const [inputLogin, setLogin] = useState({
         email: '',
         password: '',
+        remamber: '',
         error_list: [],
-        message: ''
     });
 
     const handleInput = (e) => {
@@ -29,12 +31,28 @@ function Login() {
             axios.post(`/api/login`, data).then(res => {
                 if(res.data.status === 200)
                 {
-                    console.log(res.data)
+                    console.log(res.data);
+                    // To store data
+                    localStorage.setItem('auth_username', res.data.user.name);
+                    localStorage.setItem('auth_token', res.data.user.token);
+
+
+                    Swal.fire(
+                        'Đăng nhập',
+                        'Thành công!',
+                        'success'
+                      )
+                    navigate('/admin');
                 }
                 else if(res.data.status === 401){
-                    setLogin({...inputLogin, message: res.data.message})
+                    Swal.fire(
+                        'Đăng nhập',
+                        res.data.message,
+                        'error'
+                      )
                 }
                 else{
+                    console.log(res.data);
                     setLogin({...inputLogin, error_list: res.data.validation_errors})
                 }
             })
@@ -47,9 +65,8 @@ function Login() {
                 <div className="row justify-content-center">
                     <div className="col-md-6">
                         <div className="card">
-                            <div className="card-header text-center">
-                                <h4>Đăng nhập</h4>
-                                <span className="text-danger">{inputLogin.message}</span>
+                            <div className="card-header login">
+                                <h4 >Đăng nhập</h4>
                             </div>
                             <div className="card-body">
                                 <form onSubmit={loginSubmit}>
@@ -70,7 +87,7 @@ function Login() {
                                                 Lưu đăng nhập
                                             </label>
                                             </div>
-                                        <button className="btn btn-primary m-3">Đăng nhập</button>
+                                        <button className="btn btn-primary m-3 btn-login">Đăng nhập</button>
                                     </div>
                                 </form>
                             </div>
