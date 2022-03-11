@@ -49,25 +49,18 @@ function Users() {
                 axios.delete(`api/users/${id}`).then(res => {
                     if(res.status === 200){
                         Swal.fire('Xóa!',res.data.message,'success')
-                        this.show_item_after_update()
-                        // thisClicked.closest("tr").remove()
+                        loadPage()
                     }
                     else if(res.status === 404){ 
                         Swal.fire('Xóa!',res.data.message,'error')
-                        // thisClicked.innerHTML = <i className="fa-solid fa-user-check"></i>
                     }
                 }); 
-              
-            }
-            else{
-                // thisClicked.innerHTML = (<i className="fa-solid fa-user-check"></i>)
+                
             }
         })
     }
 
-
-    useEffect(() =>{
-            
+    const loadPage  = () => {
         var num = 1;
         var url = `/api/users/?page=${num}`;
         axios.get(url).then(res => {
@@ -79,6 +72,11 @@ function Users() {
                 setLoading = false;
             }
         }); 
+    }
+
+    useEffect(() =>{
+
+        loadPage()
 
     }, []);
 
