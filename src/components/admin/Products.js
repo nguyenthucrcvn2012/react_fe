@@ -10,17 +10,31 @@ function Product() {
 
     const inputFileRef = useRef( null );
     const noimg = require('../../assets/images/noimage.png')
+    const chooseImage = () => {
+        inputFileRef.current.click();
+    }
     const [show, setShow] = useState(false);
-
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
 
-    const submitSaveProduct = (e) =>{
-        alert('ok')
-    }
+    const [productInput, setProductInput] = useState({
+        description: '',
+        product_name: '',
+        product_price: ''
+    })
+    const [productImage, setProductImage] = useState({})
 
-    const chooseImage = () => {
-        inputFileRef.current.click();
+    const handleInput = (e) => {
+        setProductInput({...productInput, [e.target.name]: e.target.value})
+        console.log(productInput)
+        console.log(productImage)
+    }
+    const handleImage = (e) => {
+        setProductImage({ image: e.target.files[0]})
+    }
+    const submitSaveProduct = (e) =>{
+
+        alert('ok')
     }
 
     return (        
@@ -37,31 +51,35 @@ function Product() {
                             <tr>
                                 <th scope="col">Tên sản phẩm</th>
                                 <th scope="col">
-                                    <input type="email" className="form-control" placeholder="Nhập tên sản phẩm" />
+                                    <input type="text" name="product_name" value={productInput.product_name}  onChange={handleInput}
+                                     className="form-control" placeholder="Nhập tên sản phẩm" />
                                     {/* <span className="text-alert">Nhập họ tên</span> */}
                                 </th>
                             </tr>
                             <tr>
                                 <th scope="row">Giá bán</th>
                                 <th scope="col">
-                                    <input type="number" className="form-control" placeholder="Nhập giá bán" />
+                                    <input type="number"name="product_price" value={productInput.product_price}  onChange={handleInput}
+                                     className="form-control" placeholder="Nhập giá bán" />
                                     {/* <span className="text-alert">Nhập họ tên</span> */}
                                 </th>
                             </tr>
                             <tr>
                                 <th scope="row">Mô tả</th>
                                 <th scope="col">
-                                    <textarea rows="6" type="email" className="form-control" placeholder="Nhập mô tả" />
+                                    <textarea rows="6" name="description" value={productInput.description} onChange={handleInput}
+                                     className="form-control" placeholder="Nhập mô tả" />
                                     {/* <span className="text-alert">Nhập họ tên</span> */}
                                 </th>
                             </tr>
                             <tr>
                                 <th scope="row">Trạng thái</th>
                                 <th scope="col">
-                                    <select className="form-select" aria-label="Default select example">
+                                    <select className="form-select" onChange={handleInput} name="is_sales" 
+                                    aria-label="Default select example">
                                         <option value="DEFAULT" disabled>Chọn trạng thái</option>
                                         <option value="1">Còn hàng</option>
-                                        <option value="1">Hết hàng</option>
+                                        <option value="0">Hết hàng</option>
                                     </select>
                                     {/* <span className="text-alert">Nhập họ tên</span> */}
                                 </th>
@@ -70,7 +88,7 @@ function Product() {
                         </div>
                         <div className="col-md-5">
                             <h5>Hình ảnh</h5>
-                            <input type="file" name="" id="" hidden className="mb-3" ref={inputFileRef} />
+                            <input type="file" name="product_image" onChange={handleImage} hidden className="mb-3" ref={inputFileRef} />
                             <div className="image-review">
                                 <img onClick={chooseImage} src={noimg} alt="" />
                             </div>
@@ -87,7 +105,7 @@ function Product() {
                 <Button variant="secondary" onClick={handleClose}>
                     Đóng
                 </Button>
-                <Button variant="primary" onClick={handleClose}>
+                <Button variant="primary" >
                     Lưu
                 </Button>
                 </Modal.Footer>

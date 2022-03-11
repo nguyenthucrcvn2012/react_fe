@@ -1,13 +1,56 @@
-import React, {useState} from 'react'
+import React, {useState, useEffect} from 'react'
 import { Modal, Button } from "react-bootstrap";
+import axios from 'axios';
 
 
 
 import Footer  from "./../../layouts/admin/Footer";
 import Navbar  from "./../../layouts/admin/Navbar";
 import Sidebar  from "./../../layouts/admin/Sidebar";
+import Navigation from '../../layouts/admin/Navigation';
 
 function Customers() {
+
+    const [loading, setLoading] = useState(true);
+    const [customers, setCustomers] = useState([]);
+    const [datas, setDatas] = useState([]);
+
+    useEffect(() =>{
+            
+        axios.get(`/api/customers`).then(res => {
+            if(res.status === 200){
+                setCustomers(res.data.customers)
+                setDatas(res.data)
+                console.log(res.data.customers)
+
+            }
+            else{
+                setLoading = false;
+            }
+        }); 
+
+    }, []);
+
+    var tableHTML = 
+        customers.map((customer, idx) => {
+            return (
+               <tr key={idx}>
+                   <td>{customer.customer_id}</td>
+                   <td>{customer.customer_name}</td>
+                   <td>{customer.email}</td>
+                   <td>{customer.tel_num}</td>
+                   <td>{customer.address}</td>
+                   <td className="text-center">
+                       <span className='icon_btn'>
+                           <i className="fa-solid fa-pencil"></i>
+                       </span>
+                   </td>
+               </tr>
+            );
+        })
+
+
+
     const [show, setShow] = useState(false);
 
     const handleClose = () => setShow(false);
@@ -97,26 +140,34 @@ function Customers() {
                                                         <th>#</th>
                                                         <th>Họ tên</th>
                                                         <th>Email</th>
-                                                        <th>Địa chỉ</th>
                                                         <th>Điện thoại</th>
+                                                        <th>Địa chỉ</th>
                                                         <th className="text-center">Thao tác</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    <tr>
-                                                        <td>1</td>
-                                                        <td>System Architect</td>
-                                                        <td>Edinburgh</td>
-                                                        <td>61</td>
-                                                        <td>2011/04/25</td>
-                                                        <td className="text-center">
-                                                            <span className='icon_btn'>
-                                                                <i className="fa-solid fa-pencil"></i>
-                                                            </span>
-                                                        </td>
-                                                    </tr>
+                                                    {/* {tableHTML} */}
+                                                    {
+                                                        customers.map((customer, idx) => {
+                                                            return (
+                                                            <tr key={idx}>
+                                                                <td>{customer.customer_id}</td>
+                                                                <td>{customer.customer_name}</td>
+                                                                <td>{customer.email}</td>
+                                                                <td>{customer.tel_num}</td>
+                                                                <td>{customer.address}</td>
+                                                                <td className="text-center">
+                                                                    <span className='icon_btn'>
+                                                                        <i className="fa-solid fa-pencil"></i>
+                                                                    </span>
+                                                                </td>
+                                                            </tr>
+                                                            );
+                                                        })
+                                                    }
                                                 </tbody>
                                             </table>
+                                             <Navigation Paginate={datas}/>
                                         </div>
                                     </div>
                                 </div> 
