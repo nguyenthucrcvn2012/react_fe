@@ -4,7 +4,6 @@ import React from "react";
 const Navigation = (props) => {
     //props is state data from parent component
     let pageState = props.Paginate;
-    console.log(pageState)
 
     //Bắt sự kiện click chuyển trang, trả về parrent component số trang
     const handleNav = (pageNumber) => {

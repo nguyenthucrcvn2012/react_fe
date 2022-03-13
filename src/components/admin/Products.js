@@ -1,12 +1,20 @@
-import React, {useState, useRef} from 'react'
+import React, {useState, useRef, useEffect} from 'react'
 import { Modal, Button } from "react-bootstrap";
 
 import Footer  from "./../../layouts/admin/Footer";
 import Navbar  from "./../../layouts/admin/Navbar";
 import Sidebar  from "./../../layouts/admin/Sidebar";
+import Navigation from '../../layouts/admin/Navigation';
+import axios from 'axios';
+import moment from 'moment';
+import Swal from "sweetalert2";
 
 
 function Product() {
+
+    const [products, setProducts] = useState([]); // fetch Products
+    const [pagination, setPagination] = useState({});// Phân trang
+    var numPage; // Số trang hiện tại
 
     const inputFileRef = useRef( null );
     const noimg = require('../../assets/images/noimage.png')
@@ -37,6 +45,66 @@ function Product() {
         alert('ok')
     }
 
+    const callBackChildren = (num) => {
+        numPage = num
+        console.log(numPage)
+        loadPage(numPage)
+    }
+
+    const convertNum = (num) => {
+        return  new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'VND' }).format(num);
+    }
+
+    const loadPage = (numPage) => {
+        axios.get(`/api/products?page=${numPage}`).then(res => {
+            if(res.status === 200){
+                setProducts(res.data.products.data)
+                setPagination({
+                    current_page: res.data.products.current_page,
+                    last_page: res.data.products.last_page,
+                    to: res.data.products.to,
+                    total: res.data.products.total,
+                    from: res.data.products.from
+                })
+            }
+        }); 
+    }
+
+    const deleteHandler = (e, id, name) => {
+        Swal.fire({
+            title: 'Xác nhận xóa',
+            text: `Bạn có chắc chắn xóa sản phẩm "${name}" không?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Xác nhận!',
+            cancelButtonText: 'Hủy'
+        }).then((result) => {
+            if (result.isConfirmed) {
+
+                axios.delete(`api/products/${id}`).then(res => {
+                    if (res.status === 200) {
+                        Swal.fire('Xóa!', res.data.message, 'success')
+                        loadPage(numPage)
+                    }
+                    else if (res.status === 404) {
+                        Swal.fire('Xóa!', res.data.message, 'error')
+                    }
+                });
+
+            }
+        })
+    }
+
+    useEffect(() =>{
+            
+        loadPage(numPage);
+
+    }, []);
+
+
+    console.log(products);
     return (        
     <div className="sb-nav-fixed">
         <form onSubmit={submitSaveProduct} className="form-product">
@@ -167,7 +235,6 @@ function Product() {
                                         <table className="table">
                                             <thead>
                                                 <tr>
-                                                    <th>#</th>
                                                     <th>Mã sản phẩm</th>
                                                     <th>Tên sản phẩm</th>
                                                     <th>Mô tả</th>
@@ -177,24 +244,36 @@ function Product() {
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                <tr>
-                                                    <td>1</td>
-                                                    <td>System Architect</td>
-                                                    <td>Edinburgh</td>
-                                                    <td>61</td>
-                                                    <td>2011/04/25</td>
-                                                    <td>$320,800</td>
-                                                    <td className="text-center">
-                                                        <span className='icon_btn'>
-                                                            <i className="fa-solid fa-pencil"></i>
-                                                        </span>
-                                                        <span className='icon_btn'>
-                                                            <i className="fa-solid fa-trash"></i>
-                                                        </span>
-                                                    </td>
-                                                </tr>
+                                                {
+                                                    products.map((pro, idx) => {
+                                                    return (
+                                                        <tr key={idx}>
+                                                            <td>{pro.product_id}</td>
+                                                            <td>{pro.product_name}</td>
+                                                            <td>{pro.description}</td>
+                                                            <td>{convertNum(pro.product_price)}</td>
+                                                            {/* <td>{moment(pro.created_at).format('YYYY MM DD')}</td> */}
+                                                            <td>
+                                                                {pro.is_sales === 1 ? 
+                                                                    <span className='text-success'>Đang bán</span> :
+                                                                    <span className='text-danger'>Ngừng bán</span>
+                                                                }
+                                                            </td>
+                                                            <td className="text-center">
+                                                                <span className='icon_btn'>
+                                                                    <i className="fa-solid fa-pencil"></i>
+                                                                </span>
+                                                                <span className='icon_btn'>
+                                                                    <i className="fa-solid fa-trash" onClick={(e) => deleteHandler(e, pro.product_id, pro.product_name)} ></i>
+                                                                </span>
+                                                            </td>
+                                                        </tr>
+                                                        );
+                                                    })
+                                                }
                                             </tbody>
                                         </table>
+                                        <Navigation Paginate={pagination}  childToParent={callBackChildren}/>
                                     </div>
                                 </div>
                             </div> 

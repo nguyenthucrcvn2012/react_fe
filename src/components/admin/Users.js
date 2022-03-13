@@ -17,7 +17,13 @@ function Users() {
     // const [loading, setLoading] = useState(true); // loading
     const [users, setUsers] = useState([]); // fetch users
     const [pagination, setPagination] = useState({}); // paginate
-    const [user, setUser] = useState([]); //form
+    const [user, setUser] = useState({
+        email:  '',
+        password: '',
+        password_confirm: '',
+        group_role: '',
+        error_list: []
+    }); //form
     var numPage; // Số trang hiện tại
 
     const callBackChildren = (num) => {
@@ -144,7 +150,7 @@ function Users() {
         })
     }
 
-
+    var titleModal = ''
     //RENDER
     var tableHTML =
         users.map((user, idx) => {
@@ -177,14 +183,36 @@ function Users() {
             );
         })
 
+    const submitUser = (e) => {
 
+        const data = {
+            email: user.email,
+            password: user.password,
+            password_confirm: user.password_confirm,
+            group_role: user.group_role,
+            // status: user.status,
+        }
 
-    const submitUser = () => {
+        axios.post(`/api/users`, data).then(res => {
+            if(res.status === 200){
+                Swal.fire('Thêm mới thành công!', res.data.message, 'success')
+                loadPage(numPage)
+                document.getElementById('USER_FORM').resset()
+            }
+            else if(res.status === 400){
+                setUser({ ...user, error_list:res.data.errors })
+            }
+            else{
+                Swal.fire('Thêm mới thất bại!', res.data.message, 'success')
+                loadPage(numPage)
+            }
+        }); 
+
     }
 
     const [show, setShow] = useState(false);
     const handleClose = () => setShow(false);
-    const handleShow = () => setShow(true);
+    const handleShow = (type) => setShow(true);
     return (
         <div className="sb-nav-fixed">
 
@@ -195,34 +223,34 @@ function Users() {
                     </Modal.Header>
                     <Modal.Body>
 
-                        <form action="" >
+                        <form id="USER_FORM" >
                             <table className="w-100">
                                 <tr>
                                     <th scope="col">Tên</th>
                                     <th scope="col">
-                                        <input type="email" className="form-control" onChange={handleInput} placeholder="Nhập họ tên" />
-                                        <span className="text-alert"></span>
+                                        <input type="text" name="name" className="form-control" onChange={handleInput} placeholder="Nhập họ tên" />
+                                        <span className="text-alert">{user.error_list.email}</span>
                                     </th>
                                 </tr>
                                 <tr>
                                     <th scope="row">Email</th>
                                     <th scope="col">
                                         <input type="email" name="email" onChange={handleInput} className="form-control" placeholder="Nhập email" />
-                                        <span className="text-alert"></span>
+                                        <span className="text-alert">{user.error_list.email}</span>
                                     </th>
                                 </tr>
                                 <tr>
                                     <th scope="row">Mật khẩu</th>
                                     <th scope="col">
                                         <input type="password" name="password" onChange={handleInput} className="form-control" placeholder="Nhập mật khẩu" />
-                                        <span className="text-alert"></span>
+                                        <span className="text-alert">{user.error_list.password}</span>
                                     </th>
                                 </tr>
                                 <tr>
                                     <th scope="row">Xác nhận</th>
                                     <th scope="col">
                                         <input type="password" name="password_confirm" onChange={handleInput} className="form-control" placeholder="Xác nhận nhận mật khẩu" />
-                                        <span className="text-alert"></span>
+                                        <span className="text-alert">{user.error_list.password_confirm}</span>
                                     </th>
                                 </tr>
                                 <tr>
@@ -230,9 +258,9 @@ function Users() {
                                     <th scope="col">
                                         <select className="form-select" name="group_role" onChange={handleInput} aria-label="Default select example">
                                             <option value="" disabled>Chọn nhóm</option>
-                                            <option value="1">Admin</option>
-                                            <option value="2">Nhân viên</option>
-                                            <option value="3">Quản lí</option>
+                                            <option value="Admin">Admin</option>
+                                            <option value="Nhân viên">Nhân viên</option>
+                                            <option value="Quản lí">Quản lí</option>
                                         </select>
                                         <span className="text-alert"></span>
                                     </th>
@@ -273,7 +301,7 @@ function Users() {
                                         <i className="fas fa-table me-1"></i>
                                         Danh sách người dùng
                                     </span>
-                                    <Button className="btn-add" onClick={handleShow}><i className="fa-solid fa-plus"></i> Thêm mới</Button>
+                                    <Button className="btn-add" onClick={(type) => handleShow()}><i className="fa-solid fa-plus"></i> Thêm mới</Button>
                                 </div>
                                 <div className="card-body">
                                     <div className="table-responsive">
