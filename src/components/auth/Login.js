@@ -30,20 +30,19 @@ function Login() {
 
             axios.post(`/api/login`, data).then(res => {
                 if(res.data.status === 200)
-                {
-                    console.log(res.data);
-                    // To store data
-                    localStorage.setItem('auth_username', res.data.user.name);
-                    localStorage.setItem('auth_token', res.data.user.token);
+                    {
+                        console.log(res.data);
+                        // To store data
+                        localStorage.setItem('auth_username', res.data.user.name);
+                        localStorage.setItem('auth_token', res.data.user.token);
 
-
-                    Swal.fire(
-                        'Đăng nhập',
-                        'Thành công!',
-                        'success'
-                      )
-                    navigate('/admin');
-                }
+                        Swal.fire(
+                            'Đăng nhập',
+                             res.data.message,
+                            'success'
+                        )
+                        navigate('/admin');
+                    }
                 else if(res.data.status === 401){
                     Swal.fire(
                         'Đăng nhập',

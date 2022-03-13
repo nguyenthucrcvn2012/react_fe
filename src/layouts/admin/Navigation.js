@@ -1,41 +1,59 @@
-import React, {useState} from "react";
-import { Link } from "react-router-dom";
+import React from "react";
 
+//functional component reactjs
+const Navigation = (props) => {
+    //props is state data from parent component
+    let pageState = props.Paginate;
+    console.log(pageState)
 
-const Navigation = (data) => {
+    //Bắt sự kiện click chuyển trang, trả về parrent component số trang
+    const handleNav = (pageNumber) => {
+        props.childToParent(pageNumber)
+    }
 
-    // const [pagination, setPagination] = useState({
-    //     current_page: '',
-    //     last_page: '',
-    //     next_page_url: '',
-    //     per_page: '',
-    //     next_page_url: '',
-    //     prev_page_url: '',
-    //     to: '',
-    //     total: '',
-    //     from: ''
-    // });
+    // Logic for displaying page numbers
+    const pageNumbers = [];
+    for (let i = 1; i <= pageState.last_page; i++) {
+        if(i-1 === pageState.current_page || pageState.current_page === i+1 || pageState.current_page === i){
+            pageNumbers.push(i);
+        }
+    }
 
-    // setPagination({
-    //     ...pagination,
-    //     from: data.Paginate.users.last_page
-    // })}
+    //Render nút nhảy trang
+    const renderPageNumbers = pageNumbers.map(number => {
+        return (
+            <li className="page-item " key={number}  id={number}>
+                <button className="page-link "  onClick={() => handleNav(number)} > {number}</button>
+            </li>
+        );
+    });
 
-    // console.log(2);
-    // console.log(data.Paginate);
-    // console.log(2);
-    // console.log(data.Paginate.users)
-    // console.log(data.Paginate.users.from)
-    // console.log(data.Paginate.users.last_page)
+    // render nút về trang đầu trang cuối
+    var renderPrev = "";
+    var renderNext = "";
+    if(pageState.last_page > 3){
+        if(pageState.current_page !== 1){
+            renderPrev =   (
+                <li className="page-item"><button className="page-link" onClick={() => handleNav(1)} >Trang đầu</button></li>
+            )
+        }
+        if(pageState.current_page !== pageState.last_page){
+            renderNext  = (
+                <li className="page-item"><button className="page-link" onClick={() => handleNav(pageState.last_page)} >Trang cuối</button></li>
+            )
+        }
+    }
 
     return (
 
         <div className="paginate-style">
             <nav aria-label="Page navigation example">
+                <span>Showing {pageState.from } to {pageState.to } of {pageState.total} entries</span>
+
                 <ul className="pagination">
-                    <li className="page-item"><Link className="page-link" to="#">&lt;</Link></li>
-                    <li className="page-item"><Link className="page-link" to="#">1</Link></li>
-                    <li className="page-item"><Link className="page-link" to="#">&gt;</Link></li>
+                    {renderPrev}
+                    {renderPageNumbers}
+                    {renderNext}
                 </ul>
             </nav>
         </div>
@@ -43,3 +61,20 @@ const Navigation = (data) => {
 }
 
 export default Navigation;
+
+
+// export default class Navigation extends Component {
+
+//     handleClick() {
+//         console.log(this.props)
+//     }
+
+//     render() {
+//         return (
+//             <div>
+//                 {this.props.parentToChild}
+//                 <button onClick={() => this.handleClick()}>Click</button>
+//             </div>
+//         )
+//     }
+// }

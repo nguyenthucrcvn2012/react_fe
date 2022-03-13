@@ -11,41 +11,56 @@ import Navigation from '../../layouts/admin/Navigation';
 
 function Customers() {
 
-    const [loading, setLoading] = useState(true);
-    const [customers, setCustomers] = useState([]);
-    const [datas, setDatas] = useState([]);
+    // const [loading, setLoading] = useState(true); //Loading
+    const [customers, setCustomers] = useState([]); // fetch customers
+    const [pagination, setPagination] = useState({});// Phân trang
+    var numPage; // Số trang hiện tại
+
+    const callBackChildren = (num) => {
+        numPage = num
+        console.log(numPage)
+        loadPage(numPage)
+    }
+
+    const loadPage = (numPage) => {
+        axios.get(`/api/customers?page=${numPage}`).then(res => {
+            if(res.status === 200){
+                setCustomers(res.data.customers.data)
+                setPagination({
+                    current_page: res.data.customers.current_page,
+                    last_page: res.data.customers.last_page,
+                    to: res.data.customers.to,
+                    total: res.data.customers.total,
+                    from: res.data.customers.from
+                })
+            }
+            // else{
+            //     setLoading = false;
+            // }
+        }); 
+    }
 
     useEffect(() =>{
             
-        axios.get(`/api/customers`).then(res => {
-            if(res.status === 200){
-                setCustomers(res.data.customers)
-                setDatas(res.data)
-                console.log(res.data.customers)
-
-            }
-            else{
-                setLoading = false;
-            }
-        }); 
+        loadPage(numPage);
 
     }, []);
 
     var tableHTML = 
         customers.map((customer, idx) => {
             return (
-               <tr key={idx}>
-                   <td>{customer.customer_id}</td>
-                   <td>{customer.customer_name}</td>
-                   <td>{customer.email}</td>
-                   <td>{customer.tel_num}</td>
-                   <td>{customer.address}</td>
-                   <td className="text-center">
-                       <span className='icon_btn'>
-                           <i className="fa-solid fa-pencil"></i>
-                       </span>
-                   </td>
-               </tr>
+                <tr key={idx}>
+                    <td>{customer.customer_id}</td>
+                    <td>{customer.customer_name}</td>
+                    <td>{customer.email}</td>
+                    <td>{customer.tel_num}</td>
+                    <td>{customer.address}</td>
+                    <td className="text-center">
+                        <span className='icon_btn'>
+                            <i className="fa-solid fa-pencil"></i>
+                        </span>
+                    </td>
+                </tr>
             );
         })
 
@@ -167,7 +182,7 @@ function Customers() {
                                                     }
                                                 </tbody>
                                             </table>
-                                             <Navigation Paginate={datas}/>
+                                            <Navigation Paginate={pagination}  childToParent={callBackChildren}/>
                                         </div>
                                     </div>
                                 </div> 
