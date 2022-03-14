@@ -17,18 +17,26 @@ function Users() {
     // const [loading, setLoading] = useState(true); // loading
     const [users, setUsers] = useState([]); // fetch users
     const [pagination, setPagination] = useState({}); // paginate
+    const [checkedStatus, setCheckedStatus] = useState(false) //Check status user form
+    const [titleForm, setTitleForm] = useState('Thêm mới user') //Check status user form
     const [user, setUser] = useState({
+        name:  '',
         email:  '',
         password: '',
         password_confirm: '',
         group_role: '',
         error_list: []
     }); //form
+
+    const create = 'show'
+
+    const handleClickStatus = () => setCheckedStatus(!checkedStatus)
+
+
     var numPage; // Số trang hiện tại
 
     const callBackChildren = (num) => {
         numPage = num
-        console.log(numPage)
         loadPage(numPage)
     }
    
@@ -78,7 +86,6 @@ function Users() {
                     total: res.data.users.total,
                     from: res.data.users.from
                 })
-                console.log(res.data.users)
             }
             // else {
             //     setLoading = false;
@@ -150,7 +157,6 @@ function Users() {
         })
     }
 
-    var titleModal = ''
     //RENDER
     var tableHTML =
         users.map((user, idx) => {
@@ -163,7 +169,7 @@ function Users() {
                     <td>{user.is_active === 1 ? <span className='text-success'>Hoạt động</span> :
                         <span className='text-danger'>Tạm khóa</span>}</td>
                     <td className="text-center">
-                        <span className='icon_btn'>
+                        <span className='icon_btn' onClick={() => handleShow(user.id)}>
                             <i className="fa-solid fa-pencil"></i>
                         </span>
                         <span className='icon_btn' onClick={(e) => deleteHandler(e, user.id)}>
@@ -182,93 +188,148 @@ function Users() {
                 </tr>
             );
         })
+    
+        const resetInput = () => {
+            setUser({
+                name:  '',
+                email:  '',
+                password: '',
+                password_confirm: '',
+                group_role: '',
+                error_list: [] 
+            })
+            setCheckedStatus(false)
+            // document.getElementById('USER_FORM').reset()
+        }
 
     const submitUser = (e) => {
-
+        e.preventDefault()
         const data = {
             email: user.email,
+            name: user.name,
             password: user.password,
             password_confirm: user.password_confirm,
             group_role: user.group_role,
-            // status: user.status,
+            is_active: checkedStatus,
         }
 
         axios.post(`/api/users`, data).then(res => {
-            if(res.status === 200){
-                Swal.fire('Thêm mới thành công!', res.data.message, 'success')
+            if(res.data.status === 200){
+
+                Swal.fire('Thêm mới', res.data.user, 'success')
                 loadPage(numPage)
-                document.getElementById('USER_FORM').resset()
+                resetInput()
+                setShow(false)
             }
-            else if(res.status === 400){
-                setUser({ ...user, error_list:res.data.errors })
+            else if(res.data.status === 401){
+
+                Swal.fire('Thêm mới', res.data.message, 'success')
+                loadPage(numPage)
             }
             else{
-                Swal.fire('Thêm mới thất bại!', res.data.message, 'success')
-                loadPage(numPage)
+
+                setUser({...user, error_list: res.data.validation_errors})
             }
         }); 
 
     }
 
     const [show, setShow] = useState(false);
-    const handleClose = () => setShow(false);
-    const handleShow = (type) => setShow(true);
+    const handleClose = () => {
+        resetInput()
+        setShow(false)
+    };
+    const handleShow = (id) => {
+        // resetInput()
+        if(Number.isInteger(id)) {
+            axios.get(`/api/users/${id}`).then(res => {
+                console.log(res.data)
+                if(res.data.status === 200){
+                    setTitleForm('Chỉnh sửa user')
+                    setUser({
+                        name: res.data.user.name,
+                        email: res.data.user.email,
+                        password: res.data.user.password,
+                        password_confirm: res.data.user.password,
+                        group_role: res.data.user.group_role,
+                        error_list: []
+                    })
+                    setCheckedStatus(res.data.user.is_active)
+                    setShow(true)
+                }
+                else if(res.data.status === 404){
+                    Swal.fire('Lỗi', res.data.message, 'warning')
+                    loadPage(numPage)
+                }
+            }); 
+        }
+        else{
+            resetInput()
+            setTitleForm('Thêm mới user')
+            setShow(true)
+        }
+    };
     return (
         <div className="sb-nav-fixed">
 
-            <form>
                 <Modal show={show} onHide={handleClose}>
                     <Modal.Header closeButton>
-                        <Modal.Title>Thêm user</Modal.Title>
+                        <Modal.Title>{titleForm}</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
 
-                        <form id="USER_FORM" >
+                        <form id="USER_FORM">
                             <table className="w-100">
                                 <tr>
                                     <th scope="col">Tên</th>
                                     <th scope="col">
-                                        <input type="text" name="name" className="form-control" onChange={handleInput} placeholder="Nhập họ tên" />
-                                        <span className="text-alert">{user.error_list.email}</span>
+                                        <input type="text" name="name" className="form-control" value={user.name} 
+                                        onChange={handleInput} placeholder="Nhập họ tên" />
+                                        <span className="text-alert">{user.error_list.name}</span>
                                     </th>
                                 </tr>
                                 <tr>
                                     <th scope="row">Email</th>
                                     <th scope="col">
-                                        <input type="email" name="email" onChange={handleInput} className="form-control" placeholder="Nhập email" />
+                                        <input type="email" name="email" onChange={handleInput} value={user.email} 
+                                        className="form-control" placeholder="Nhập email" />
                                         <span className="text-alert">{user.error_list.email}</span>
                                     </th>
                                 </tr>
                                 <tr>
                                     <th scope="row">Mật khẩu</th>
                                     <th scope="col">
-                                        <input type="password" name="password" onChange={handleInput} className="form-control" placeholder="Nhập mật khẩu" />
+                                        <input type="password" name="password" onChange={handleInput} value={user.password} 
+                                        className="form-control" placeholder="Nhập mật khẩu" />
                                         <span className="text-alert">{user.error_list.password}</span>
                                     </th>
                                 </tr>
                                 <tr>
-                                    <th scope="row">Xác nhận</th>
+                                    <th scope="row">Mật khẩu xác nhận</th>
                                     <th scope="col">
-                                        <input type="password" name="password_confirm" onChange={handleInput} className="form-control" placeholder="Xác nhận nhận mật khẩu" />
+                                        <input type="password" name="password_confirm" value={user.password_confirm} 
+                                        onChange={handleInput} className="form-control" placeholder="Xác nhận nhận mật khẩu" />
                                         <span className="text-alert">{user.error_list.password_confirm}</span>
                                     </th>
                                 </tr>
                                 <tr>
                                     <th scope="row">Nhóm</th>
                                     <th scope="col">
-                                        <select className="form-select" name="group_role" onChange={handleInput} aria-label="Default select example">
-                                            <option value="" disabled>Chọn nhóm</option>
-                                            <option value="Admin">Admin</option>
+                                        <select className="form-select" name="group_role" onChange={handleInput}
+                                         aria-label="Default select example">
+                                            <option value="" >Chọn nhóm</option>
+                                            <option value="Admin" >Admin</option>
                                             <option value="Nhân viên">Nhân viên</option>
                                             <option value="Quản lí">Quản lí</option>
                                         </select>
-                                        <span className="text-alert"></span>
+                                        <span className="text-alert">{user.error_list.group_role}</span>
                                     </th>
                                 </tr>
                                 <tr>
                                     <th scope="row">Trạng thái</th>
                                     <th scope="col">
-                                        <input className="form-check-input" type="checkbox" name="is_active" onChange={handleInput} />
+                                        <input className="form-check-input" type="checkbox" checked={checkedStatus} 
+                                        name="is_active" onClick={handleClickStatus} />
                                     </th>
                                 </tr>
                             </table>
@@ -283,7 +344,6 @@ function Users() {
                         </form>
                     </Modal.Body>
                 </Modal>
-            </form>
 
 
             <Navbar />
@@ -301,7 +361,7 @@ function Users() {
                                         <i className="fas fa-table me-1"></i>
                                         Danh sách người dùng
                                     </span>
-                                    <Button className="btn-add" onClick={(type) => handleShow()}><i className="fa-solid fa-plus"></i> Thêm mới</Button>
+                                    <Button className="btn-add" onClick={() => handleShow()}><i className="fa-solid fa-plus"></i> Thêm mới</Button>
                                 </div>
                                 <div className="card-body">
                                     <div className="table-responsive">

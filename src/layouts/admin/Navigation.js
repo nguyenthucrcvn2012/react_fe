@@ -13,7 +13,7 @@ const Navigation = (props) => {
     // Logic for displaying page numbers
     const pageNumbers = [];
     for (let i = 1; i <= pageState.last_page; i++) {
-        if(i-1 === pageState.current_page || pageState.current_page === i+1 || pageState.current_page === i){
+        if(i > pageState.current_page - 3 && i  < pageState.current_page + 3 || pageState.current_page === i){
             pageNumbers.push(i);
         }
     }
@@ -33,12 +33,12 @@ const Navigation = (props) => {
     if(pageState.last_page > 3){
         if(pageState.current_page !== 1){
             renderPrev =   (
-                <li className="page-item"><button className="page-link" onClick={() => handleNav(1)} >Trang đầu</button></li>
+                <li className="page-item"><button className="page-link" onClick={() => handleNav(1)} >Đầu</button></li>
             )
         }
         if(pageState.current_page !== pageState.last_page){
             renderNext  = (
-                <li className="page-item"><button className="page-link" onClick={() => handleNav(pageState.last_page)} >Trang cuối</button></li>
+                <li className="page-item"><button className="page-link" onClick={() => handleNav(pageState.last_page)} >Cuối</button></li>
             )
         }
     }
