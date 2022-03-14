@@ -43,20 +43,32 @@ const Navigation = (props) => {
         }
     }
 
-    return (
+    if(pageState.last_page > 1){
+        return (
 
-        <div className="paginate-style">
-            <nav aria-label="Page navigation example">
-                <span>Showing {pageState.from } to {pageState.to } of {pageState.total} entries</span>
+            <div className="paginate-style">
+                <nav aria-label="Page navigation example">
+                    <span>Showing {pageState.from } to {pageState.to } of {pageState.total} entries</span>
 
-                <ul className="pagination">
-                    {renderPrev}
-                    {renderPageNumbers}
-                    {renderNext}
-                </ul>
-            </nav>
-        </div>
-    );
+                    <ul className="pagination">
+                        {renderPrev}
+                        {renderPageNumbers}
+                        {renderNext}
+                    </ul>
+                </nav>
+            </div>
+        );
+        
+    }
+    else {
+
+        return (
+
+            <div className="paginate-style">
+                
+            </div>
+        );
+    }
 }
 
 export default Navigation;

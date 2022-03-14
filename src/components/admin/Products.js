@@ -6,55 +6,129 @@ import Navbar  from "./../../layouts/admin/Navbar";
 import Sidebar  from "./../../layouts/admin/Sidebar";
 import Navigation from '../../layouts/admin/Navigation';
 import axios from 'axios';
-import moment from 'moment';
+// import moment from 'moment';
 import Swal from "sweetalert2";
-
 
 function Product() {
 
-    const [products, setProducts] = useState([]); // fetch Products
+    const [products, setProducts] = useState([]); // Products
     const [pagination, setPagination] = useState({});// Phân trang
-    var numPage; // Số trang hiện tại
+    const [titleForm, setTitleForm] = useState('Thêm mới sản phẩm') //Tiêu đề form
 
+    const [product, setProduct] = useState({
+        product_id: '',
+        product_name: '',
+        product_image: '',
+        product_price: '',
+        description: '',
+        is_sales: '',
+        error_list: []
+    }); // Product
+
+
+    //Hình mặc định
+    var noimg = require('../../assets/images/noimage.png')
+    const [picture, setPicture] = useState(null);
+    const [imgData, setImgData] = useState(noimg);
+    //chọn hình sp khi ấn vào hình hiện tại
     const inputFileRef = useRef( null );
-    const noimg = require('../../assets/images/noimage.png')
     const chooseImage = () => {
         inputFileRef.current.click();
     }
-    const [show, setShow] = useState(false);
-    const handleClose = () => setShow(false);
-    const handleShow = () => setShow(true);
-
-    const [productInput, setProductInput] = useState({
-        description: '',
-        product_name: '',
-        product_price: ''
-    })
+    const onChangePicture = (e) => {
+        if (e.target.files[0]) {
+          console.log("picture: ", e.target.files);
+          setPicture(e.target.files[0]);
+          const reader = new FileReader();
+          reader.addEventListener("load", () => {
+            setImgData(reader.result);
+          });
+          reader.readAsDataURL(e.target.files[0]);
+        }
+      };
+    //Hình ảnh sp
     const [productImage, setProductImage] = useState({})
-
-    const handleInput = (e) => {
-        setProductInput({...productInput, [e.target.name]: e.target.value})
-        console.log(productInput)
-        console.log(productImage)
-    }
     const handleImage = (e) => {
         setProductImage({ image: e.target.files[0]})
+        onChangePicture(e)
     }
-    const submitSaveProduct = (e) =>{
-
-        alert('ok')
+    //Xóa hình ảnh
+    const removeImage = () => {
+        setImgData(noimg)
+        setProductImage({})
     }
 
+    //Đóng mở modal form
+    const [show, setShow] = useState(false);
+    const handleClose = () => {
+        resetInput()
+        setShow(false)
+    };
+    const handleShow = () => setShow(true);
+
+    const handleInput = (e) => {
+        setProduct({...product, [e.target.name]: e.target.value})
+    }
+
+    // RESET DATA
+    const resetInput = () => {
+        setProduct({
+            product_id:  '',
+            product_name:  '',
+            product_price:  '',
+            product_image: '',
+            description: '',
+            is_sales: '',
+            error_list: []
+        })
+        removeImage()
+        // document.getElementById('USER_FORM').reset()
+    }
+
+    //Lưu mới sản phẩm
+    const submitStoreProduct = (e) =>{
+        e.preventDefault()
+        const data = {
+            product_name: product.product_name,
+            product_price: product.product_price,
+            description: product.description,
+            is_sales: product.is_sales,
+        }
+
+        axios.post(`/api/products`, data).then(res => {
+            if(res.data.status === 200){
+
+                Swal.fire('Thêm mới', res.data.user, 'success')
+                loadPage(numPage)
+                resetInput()
+                setShow(false)
+            }
+            else if(res.data.status === 401){
+
+                Swal.fire('Thêm mới', res.data.message, 'success')
+                loadPage(numPage)
+            }
+            else{
+
+                setProduct({...product, error_list: res.data.validation_errors})
+            }
+        }); 
+    }
+
+    // Xử lí phân trang
+    var numPage; // Số trang hiện tại
     const callBackChildren = (num) => {
         numPage = num
         console.log(numPage)
         loadPage(numPage)
     }
 
+    // Định dạng số tiền
     const convertNum = (num) => {
         return  new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'VND' }).format(num);
     }
 
+    //Hàm call api lấy danh sách sp
     const loadPage = (numPage) => {
         axios.get(`/api/products?page=${numPage}`).then(res => {
             if(res.status === 200){
@@ -70,6 +144,7 @@ function Product() {
         }); 
     }
 
+    //Xóa sản phẩm
     const deleteHandler = (e, id, name) => {
         Swal.fire({
             title: 'Xác nhận xóa',
@@ -97,47 +172,46 @@ function Product() {
         })
     }
 
+    //call api sau khi load trang
     useEffect(() =>{
             
         loadPage(numPage);
 
     }, []);
 
-
-    console.log(products);
     return (        
     <div className="sb-nav-fixed">
-        <form onSubmit={submitSaveProduct} className="form-product">
             <Modal size="lg" show={show} onHide={handleClose}>
                 <Modal.Header closeButton>
-                <Modal.Title>Thêm / sửa sản phẩm</Modal.Title>
+                <Modal.Title>{titleForm}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
+                <form className="form-product" encType="multipart/form-data">
                     <div className="row">
                         <div className="col-md-7">
                             <table className="w-100">
                             <tr>
                                 <th scope="col">Tên sản phẩm</th>
                                 <th scope="col">
-                                    <input type="text" name="product_name" value={productInput.product_name}  onChange={handleInput}
+                                    <input type="text" name="product_name" value={product.product_name}  onChange={handleInput}
                                      className="form-control" placeholder="Nhập tên sản phẩm" />
-                                    {/* <span className="text-alert">Nhập họ tên</span> */}
+                                    <span className="text-alert">{product.error_list.product_name}</span>
                                 </th>
                             </tr>
                             <tr>
                                 <th scope="row">Giá bán</th>
                                 <th scope="col">
-                                    <input type="number"name="product_price" value={productInput.product_price}  onChange={handleInput}
+                                    <input type="number" name="product_price" value={product.product_price}  onChange={handleInput}
                                      className="form-control" placeholder="Nhập giá bán" />
-                                    {/* <span className="text-alert">Nhập họ tên</span> */}
+                                    <span className="text-alert">{product.error_list.product_price}</span>
                                 </th>
                             </tr>
                             <tr>
                                 <th scope="row">Mô tả</th>
                                 <th scope="col">
-                                    <textarea rows="6" name="description" value={productInput.description} onChange={handleInput}
+                                    <textarea rows="6" name="description" value={product.description} onChange={handleInput}
                                      className="form-control" placeholder="Nhập mô tả" />
-                                    {/* <span className="text-alert">Nhập họ tên</span> */}
+                                    <span className="text-alert">{product.error_list.description}</span>
                                 </th>
                             </tr>
                             <tr>
@@ -145,40 +219,41 @@ function Product() {
                                 <th scope="col">
                                     <select className="form-select" onChange={handleInput} name="is_sales" 
                                     aria-label="Default select example">
-                                        <option value="DEFAULT" disabled>Chọn trạng thái</option>
-                                        <option value="1">Còn hàng</option>
-                                        <option value="0">Hết hàng</option>
+                                        <option value="" >Chọn trạng thái</option>
+                                        <option value="1" selected={product.is_sales == '1' ? 'selected' : ''}>Còn hàng</option>
+                                        <option value="0" selected={product.is_sales == '0' ? 'selected' : ''}>Hết hàng</option>
                                     </select>
-                                    {/* <span className="text-alert">Nhập họ tên</span> */}
+                                    <span className="text-alert">{product.error_list.is_sales}</span>
                                 </th>
                             </tr>
                         </table>
                         </div>
                         <div className="col-md-5">
                             <h5>Hình ảnh</h5>
-                            <input type="file" name="product_image" onChange={handleImage} hidden className="mb-3" ref={inputFileRef} />
-                            <div className="image-review">
-                                <img onClick={chooseImage} src={noimg} alt="" />
+                            <input type="file"  accept="image/*" name="product_image" hidden onChange={handleImage}  className="mb-3" ref={inputFileRef} />
+                            <div className="image-review" id="REVIEW-IMAGE">
+                                <img onClick={chooseImage} src={imgData} alt="" />
                             </div>
 
                             <div className="box-upload-image mt-3">
                                 <button className='btn-upload btn-primary'>Upload</button> 
-                                <button className='btn-remove btn-danger'>Xóa file</button>
+                                <button className='btn-remove btn-danger' onClick={removeImage}>Xóa file</button>
                                 <input type="text" placeholder='Tên file' disabled/>
                             </div>
                         </div>
                     </div>
-                </Modal.Body>
-                <Modal.Footer>
-                <Button variant="secondary" onClick={handleClose}>
-                    Đóng
-                </Button>
-                <Button variant="primary" >
-                    Lưu
-                </Button>
-                </Modal.Footer>
+                    <Modal.Footer>
+                    <Button variant="secondary" onClick={handleClose}>
+                        Đóng
+                    </Button>
+                    <Button variant="primary" onClick={submitStoreProduct} >
+                        Lưu
+                    </Button>
+                    </Modal.Footer>
+                </form>
+            </Modal.Body>
+                
             </Modal>
-        </form>
 
         <Navbar />
 

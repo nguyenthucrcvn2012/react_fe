@@ -18,8 +18,9 @@ function Users() {
     const [users, setUsers] = useState([]); // fetch users
     const [pagination, setPagination] = useState({}); // paginate
     const [checkedStatus, setCheckedStatus] = useState(false) //Check status user form
-    const [titleForm, setTitleForm] = useState('Thêm mới user') //Check status user form
+    const [titleForm, setTitleForm] = useState('Thêm mới user') //Tiêu đề form
     const [user, setUser] = useState({
+        id: '',
         name:  '',
         email:  '',
         password: '',
@@ -28,13 +29,10 @@ function Users() {
         error_list: []
     }); //form
 
-    const create = 'show'
-
     const handleClickStatus = () => setCheckedStatus(!checkedStatus)
 
-
+    //Phân trang 
     var numPage; // Số trang hiện tại
-
     const callBackChildren = (num) => {
         numPage = num
         loadPage(numPage)
@@ -93,6 +91,7 @@ function Users() {
         });
     }
 
+    //Call api sau khi load trang
     useEffect(() => {
 
         loadPage(numPage)
@@ -189,19 +188,22 @@ function Users() {
             );
         })
     
-        const resetInput = () => {
-            setUser({
-                name:  '',
-                email:  '',
-                password: '',
-                password_confirm: '',
-                group_role: '',
-                error_list: [] 
-            })
-            setCheckedStatus(false)
-            // document.getElementById('USER_FORM').reset()
-        }
+    // RESET DATA
+    const resetInput = () => {
+        setUser({
+            id:  '',
+            name:  '',
+            email:  '',
+            password: '',
+            password_confirm: '',
+            group_role: '',
+            error_list: [] 
+        })
+        setCheckedStatus(false)
+        // document.getElementById('USER_FORM').reset()
+    }
 
+        //Tạo mới user
     const submitUser = (e) => {
         e.preventDefault()
         const data = {
@@ -234,6 +236,61 @@ function Users() {
 
     }
 
+    //cập nhật người dùng
+    const submitUpdateUser = (e) => {
+
+        e.preventDefault()
+        const data = {
+            email: user.email,
+            name: user.name,
+            group_role: user.group_role,
+            is_active: checkedStatus,
+        }
+
+        axios.put(`/api/users/${user.id}`, data).then(res => {
+            if(res.data.status === 200){
+                Swal.fire('Cập nhật', res.data.message, 'success')
+                loadPage(numPage)
+                resetInput()
+                setShow(false)
+            }
+            else if(res.data.status === 401){
+                Swal.fire('Cập nhật', res.data.message, 'success')
+                loadPage(numPage)
+            }
+            else{
+                setUser({...user, error_list: res.data.validation_errors})
+            }
+        }); 
+
+    }
+    
+
+    //component password, password_confirm
+    const RenderPassword = () => {
+        return (
+            <>
+                <tr>
+                    <th scope="row">Mật khẩu</th>
+                    <th scope="col">
+                        <input type="password" name="password" onChange={handleInput} value={user.password} 
+                        className="form-control" placeholder="Nhập mật khẩu" />
+                        <span className="text-alert">{user.error_list.password}</span>
+                    </th>
+                </tr>
+                <tr>
+                    <th scope="row">Mật khẩu xác nhận</th>
+                    <th scope="col">
+                        <input type="password" name="password_confirm" value={user.password_confirm} 
+                        onChange={handleInput} className="form-control" placeholder="Xác nhận nhận mật khẩu" />
+                        <span className="text-alert">{user.error_list.password_confirm}</span>
+                    </th>
+                </tr>
+            </>
+        )
+    }
+
+    //Đóng mở modal
     const [show, setShow] = useState(false);
     const handleClose = () => {
         resetInput()
@@ -247,6 +304,7 @@ function Users() {
                 if(res.data.status === 200){
                     setTitleForm('Chỉnh sửa user')
                     setUser({
+                        id: res.data.user.id,
                         name: res.data.user.name,
                         email: res.data.user.email,
                         password: res.data.user.password,
@@ -269,6 +327,7 @@ function Users() {
             setShow(true)
         }
     };
+
     return (
         <div className="sb-nav-fixed">
 
@@ -296,31 +355,16 @@ function Users() {
                                         <span className="text-alert">{user.error_list.email}</span>
                                     </th>
                                 </tr>
-                                <tr>
-                                    <th scope="row">Mật khẩu</th>
-                                    <th scope="col">
-                                        <input type="password" name="password" onChange={handleInput} value={user.password} 
-                                        className="form-control" placeholder="Nhập mật khẩu" />
-                                        <span className="text-alert">{user.error_list.password}</span>
-                                    </th>
-                                </tr>
-                                <tr>
-                                    <th scope="row">Mật khẩu xác nhận</th>
-                                    <th scope="col">
-                                        <input type="password" name="password_confirm" value={user.password_confirm} 
-                                        onChange={handleInput} className="form-control" placeholder="Xác nhận nhận mật khẩu" />
-                                        <span className="text-alert">{user.error_list.password_confirm}</span>
-                                    </th>
-                                </tr>
+                                {user.id === '' ? <RenderPassword /> : ''}
                                 <tr>
                                     <th scope="row">Nhóm</th>
                                     <th scope="col">
                                         <select className="form-select" name="group_role" onChange={handleInput}
                                          aria-label="Default select example">
                                             <option value="" >Chọn nhóm</option>
-                                            <option value="Admin" >Admin</option>
-                                            <option value="Nhân viên">Nhân viên</option>
-                                            <option value="Quản lí">Quản lí</option>
+                                            <option value="Admin"  selected={user.group_role == 'Admin' ? 'selected' : ''}>Admin</option>
+                                            <option value="Nhân viên" selected={user.group_role == 'Nhân viên' ? 'selected' : ''}>Nhân viên</option>
+                                            <option value="Quản lí" selected={user.group_role == 'Quản lí' ? 'selected' : ''}>Quản lí</option>
                                         </select>
                                         <span className="text-alert">{user.error_list.group_role}</span>
                                     </th>
@@ -337,7 +381,7 @@ function Users() {
                                 <Button variant="secondary" onClick={handleClose}>
                                     Đóng
                                 </Button>
-                                <Button variant="primary" onClick={submitUser}>
+                                <Button variant="primary" onClick={user.id === '' ?  submitUser : submitUpdateUser}>
                                     Lưu
                                 </Button>
                             </Modal.Footer>
