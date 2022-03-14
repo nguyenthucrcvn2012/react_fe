@@ -16,6 +16,7 @@ function Product() {
     const [titleForm, setTitleForm] = useState('Thêm mới sản phẩm') //Tiêu đề form
 
     const [product, setProduct] = useState({
+
         product_id: '',
         product_name: '',
         product_image: '',
@@ -23,12 +24,12 @@ function Product() {
         description: '',
         is_sales: '',
         error_list: []
-    }); // Product
+
+    }); 
 
 
     //Hình mặc định
     var noimg = require('../../assets/images/noimage.png')
-    const [picture, setPicture] = useState(null);
     const [imgData, setImgData] = useState(noimg);
     //chọn hình sp khi ấn vào hình hiện tại
     const inputFileRef = useRef( null );
@@ -38,7 +39,6 @@ function Product() {
     const onChangePicture = (e) => {
         if (e.target.files[0]) {
           console.log("picture: ", e.target.files);
-          setPicture(e.target.files[0]);
           const reader = new FileReader();
           reader.addEventListener("load", () => {
             setImgData(reader.result);
@@ -49,7 +49,8 @@ function Product() {
     //Hình ảnh sp
     const [productImage, setProductImage] = useState({})
     const handleImage = (e) => {
-        setProductImage({ image: e.target.files[0]})
+        const file = e.target.files[0];
+        setProductImage({ image: file})
         onChangePicture(e)
     }
     //Xóa hình ảnh
@@ -88,20 +89,28 @@ function Product() {
     //Lưu mới sản phẩm
     const submitStoreProduct = (e) =>{
         e.preventDefault()
-        const data = {
-            product_name: product.product_name,
-            product_price: product.product_price,
-            description: product.description,
-            is_sales: product.is_sales,
-        }
 
-        axios.post(`/api/products`, data).then(res => {
+        const formData = new FormData();
+        formData.append('product_name', product.product_name  );
+        formData.append('product_price', product.product_price );
+        formData.append('description', product.description );
+        formData.append('is_sales', product.is_sales );
+        formData.append('product_image', productImage.image);
+
+        // const data = {
+        //     product_name: product.product_name,
+        //     product_price: product.product_price,
+        //     description: product.description,
+        //     is_sales: product.is_sales,
+        // }
+
+        axios.post(`/api/products`, formData).then(res => {
             if(res.data.status === 200){
 
                 Swal.fire('Thêm mới', res.data.user, 'success')
                 loadPage(numPage)
-                resetInput()
                 setShow(false)
+                resetInput()
             }
             else if(res.data.status === 401){
 
@@ -202,7 +211,7 @@ function Product() {
                                 <th scope="row">Giá bán</th>
                                 <th scope="col">
                                     <input type="number" name="product_price" value={product.product_price}  onChange={handleInput}
-                                     className="form-control" placeholder="Nhập giá bán" />
+                                     className="form-control" min="0" placeholder="Nhập giá bán" />
                                     <span className="text-alert">{product.error_list.product_price}</span>
                                 </th>
                             </tr>
@@ -234,6 +243,7 @@ function Product() {
                             <div className="image-review" id="REVIEW-IMAGE">
                                 <img onClick={chooseImage} src={imgData} alt="" />
                             </div>
+                                <span className="text-alert">{product.error_list.product_image}</span>
 
                             <div className="box-upload-image mt-3">
                                 <button className='btn-upload btn-primary'>Upload</button> 
@@ -319,8 +329,8 @@ function Product() {
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {
-                                                    products.map((pro, idx) => {
+                                                { 
+                                                   products?.map((pro, idx) => {
                                                     return (
                                                         <tr key={idx}>
                                                             <td>{pro.product_id}</td>

@@ -270,7 +270,7 @@ function Customers() {
                                                 <tbody>
                                                     {/* {tableHTML} */}
                                                     {
-                                                        customers.map((customer, idx) => {
+                                                        customers?.map((customer, idx) => {
                                                             return (
                                                             <tr key={idx}>
                                                                 <td>{customer.customer_id}</td>

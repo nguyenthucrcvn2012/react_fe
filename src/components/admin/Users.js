@@ -157,36 +157,7 @@ function Users() {
     }
 
     //RENDER
-    var tableHTML =
-        users.map((user, idx) => {
-            return (
-                <tr key={idx}>
-                    <td>{user.id}</td>
-                    <td>{user.name}</td>
-                    <td>{user.email}</td>
-                    <td>{user.group_role}</td>
-                    <td>{user.is_active === 1 ? <span className='text-success'>Hoạt động</span> :
-                        <span className='text-danger'>Tạm khóa</span>}</td>
-                    <td className="text-center">
-                        <span className='icon_btn' onClick={() => handleShow(user.id)}>
-                            <i className="fa-solid fa-pencil"></i>
-                        </span>
-                        <span className='icon_btn' onClick={(e) => deleteHandler(e, user.id)}>
-                            <i className="fa-solid fa-trash"></i>
-                        </span>
-                        {user.is_active === 1 ?
-                            <span className='icon_btn' onClick={(e) => unAcitveHandler(e, user.id)}>
-                                <i className="fa-solid fa-user-check"></i>
-                            </span>
-                            :
-                            <span className='icon_btn' onClick={(e) => acitveHandler(e, user.id)}>
-                                <i className="fa-solid fa-user-xmark"></i>
-                            </span>
-                        }
-                    </td>
-                </tr>
-            );
-        })
+    // var tableHTML = 
     
     // RESET DATA
     const resetInput = () => {
@@ -421,7 +392,37 @@ function Users() {
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {tableHTML}
+                                                {
+                                                    users?.map((user, idx) => {
+                                                        return (
+                                                            <tr key={idx}>
+                                                                <td>{user.id}</td>
+                                                                <td>{user.name}</td>
+                                                                <td>{user.email}</td>
+                                                                <td>{user.group_role}</td>
+                                                                <td>{user.is_active === 1 ? <span className='text-success'>Hoạt động</span> :
+                                                                    <span className='text-danger'>Tạm khóa</span>}</td>
+                                                                <td className="text-center">
+                                                                    <span className='icon_btn' onClick={() => handleShow(user.id)}>
+                                                                        <i className="fa-solid fa-pencil"></i>
+                                                                    </span>
+                                                                    <span className='icon_btn' onClick={(e) => deleteHandler(e, user.id)}>
+                                                                        <i className="fa-solid fa-trash"></i>
+                                                                    </span>
+                                                                    {user.is_active === 1 ?
+                                                                        <span className='icon_btn' onClick={(e) => unAcitveHandler(e, user.id)}>
+                                                                            <i className="fa-solid fa-user-check"></i>
+                                                                        </span>
+                                                                        :
+                                                                        <span className='icon_btn' onClick={(e) => acitveHandler(e, user.id)}>
+                                                                            <i className="fa-solid fa-user-xmark"></i>
+                                                                        </span>
+                                                                    }
+                                                                </td>
+                                                            </tr>
+                                                        );
+                                                    })
+                                                }
                                             </tbody>
                                         </table>
                                         <Navigation Paginate={pagination}  childToParent={callBackChildren}/>
