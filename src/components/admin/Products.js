@@ -5,15 +5,18 @@ import Footer  from "./../../layouts/admin/Footer";
 import Navbar  from "./../../layouts/admin/Navbar";
 import Sidebar  from "./../../layouts/admin/Sidebar";
 import Navigation from '../../layouts/admin/Navigation';
+import Loading from '../../layouts/admin/Loading';
 import axios from 'axios';
 // import moment from 'moment';
 import Swal from "sweetalert2";
 
 function Product() {
 
+    const [loading, setLoading] = useState(true); // loading
     const [products, setProducts] = useState([]); // Products
     const [pagination, setPagination] = useState({});// Phân trang
     const [titleForm, setTitleForm] = useState('Thêm mới sản phẩm') //Tiêu đề form
+    const [inputSearch, setInputSearch] = useState({}) //Form search
 
     const [product, setProduct] = useState({
 
@@ -27,6 +30,10 @@ function Product() {
 
     }); 
 
+    const handleInputSearch = (e) => {
+        setInputSearch({ ...inputSearch, [e.target.name]: e.target.value })
+        console.log(inputSearch)
+    }
 
     //Hình mặc định
     var noimg = require('../../assets/images/noimage.png')
@@ -59,6 +66,13 @@ function Product() {
         setProductImage({})
     }
 
+    //Xóa tìm kiếm
+    const handleDeleteSearch = () => {
+        loadPage(1)
+        setInputSearch({})
+        console.log(inputSearch)
+    }
+
     //Đóng mở modal form
     const [show, setShow] = useState(false);
     const handleClose = () => {
@@ -84,6 +98,44 @@ function Product() {
         })
         removeImage()
         // document.getElementById('USER_FORM').reset()
+    }
+
+
+    //RENDER
+    var tableHTML = ""
+    if(loading){
+        tableHTML =  (
+            <td colSpan={6}>
+                <Loading />
+            </td>
+        )
+    }
+    else{
+        tableHTML = products?.map((pro, idx) => {
+            return (
+                <tr key={idx}>
+                    <td>{pro.product_id}</td>
+                    <td>{pro.product_name}</td>
+                    <td>{pro.description}</td>
+                    <td>{pro.product_price}</td>
+                    {/* <td>{moment(pro.created_at).format('YYYY MM DD')}</td> */}
+                    <td>
+                        {pro.is_sales === 1 ? 
+                            <span className='text-success'>Đang bán</span> :
+                            <span className='text-danger'>Ngừng bán</span>
+                        }
+                    </td>
+                    <td className="text-center">
+                        <span className='icon_btn'>
+                            <i className="fa-solid fa-pencil"></i>
+                        </span>
+                        <span className='icon_btn'>
+                            <i className="fa-solid fa-trash" onClick={(e) => deleteHandler(e, pro.product_id, pro.product_name)} ></i>
+                        </span>
+                    </td>
+                </tr>
+                );
+            })
     }
 
     //Lưu mới sản phẩm
@@ -133,13 +185,14 @@ function Product() {
     }
 
     // Định dạng số tiền
-    const convertNum = (num) => {
-        return  new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'VND' }).format(num);
-    }
+    // const convertNum = (num) => {
+    //     return  new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'VND' }).format(num);
+    // }
 
     //Hàm call api lấy danh sách sp
-    const loadPage = (numPage) => {
-        axios.get(`/api/products?page=${numPage}`).then(res => {
+    const loadPage = (numPage, condition) => {
+        setLoading(true);
+        axios.get(`/api/products?page=${numPage}`, condition).then(res => {
             if(res.status === 200){
                 setProducts(res.data.products.data)
                 setPagination({
@@ -149,6 +202,10 @@ function Product() {
                     total: res.data.products.total,
                     from: res.data.products.from
                 })
+                setLoading(false);
+            }
+            else{
+                setLoading(true);
             }
         }); 
     }
@@ -282,7 +339,6 @@ function Product() {
                                         <i className="fas fa-table me-1"></i>
                                         Danh sách sản phẩm
                                     </span>
-                                    <Button className="btn-add" onClick={handleShow}><i className="fa-solid fa-plus"></i> Thêm mới</Button>
                                 </div>
                                 <div className="card-body">
 
@@ -301,18 +357,20 @@ function Product() {
                                                 <option value="3">Three</option>
                                                 </select>
                                             </div>
-                                            <div className="col-md-2 col-6 mb-1">
+                                            <div className="col-md-3 col-6 mb-1">
                                                 <label htmlFor="price_from">Giá bán từ</label>
                                                 <input type="number"  className="form-control" id='price_from'/>   
                                             </div>
-                                            <div className="col-md-2 col-6 mb-1">
+                                            <div className="col-md-3 col-6 mb-1">
                                                 <label htmlFor="price_to">Giá bán đến</label>
                                                 <input type="number"  className="form-control" id='price_to'/>   
                                             </div>
-                                            <div className="col-md-2 col-12 mb-1 box-btn-search mt-4">
-                                                <button type="button"  className="btn btn-primary btn-search" ><i className="fa-solid fa-magnifying-glass"></i></button>
+                                            <div className="col-md-12 col-12 mb-1 box-btn-search mt-4">
+                                                <button type="button"  className="btn btn-primary btn-search  m-1" ><i className="fa-solid fa-magnifying-glass"></i></button>
                                                 &nbsp;
-                                                <button type="button"  className="btn btn-danger btn-search">Xóa tìm</button> 
+                                                <button type="button"  className="btn btn-danger btn-search  m-1" onClick={handleDeleteSearch}><i class="fa-solid fa-x"></i> Xóa tìm</button> 
+                                                &nbsp;
+                                                <button className="btn-primary btn btn-search  m-1" onClick={handleShow}><i className="fa-solid fa-plus"></i> Thêm mới</button>
                                             </div>
                                         </div>
                                     </div>
@@ -330,31 +388,7 @@ function Product() {
                                             </thead>
                                             <tbody>
                                                 { 
-                                                   products?.map((pro, idx) => {
-                                                    return (
-                                                        <tr key={idx}>
-                                                            <td>{pro.product_id}</td>
-                                                            <td>{pro.product_name}</td>
-                                                            <td>{pro.description}</td>
-                                                            <td>{convertNum(pro.product_price)}</td>
-                                                            {/* <td>{moment(pro.created_at).format('YYYY MM DD')}</td> */}
-                                                            <td>
-                                                                {pro.is_sales === 1 ? 
-                                                                    <span className='text-success'>Đang bán</span> :
-                                                                    <span className='text-danger'>Ngừng bán</span>
-                                                                }
-                                                            </td>
-                                                            <td className="text-center">
-                                                                <span className='icon_btn'>
-                                                                    <i className="fa-solid fa-pencil"></i>
-                                                                </span>
-                                                                <span className='icon_btn'>
-                                                                    <i className="fa-solid fa-trash" onClick={(e) => deleteHandler(e, pro.product_id, pro.product_name)} ></i>
-                                                                </span>
-                                                            </td>
-                                                        </tr>
-                                                        );
-                                                    })
+                                                   tableHTML ? tableHTML : <tr ><td colSpan={6}>Không có dữ liệu</td> </tr>
                                                 }
                                             </tbody>
                                         </table>

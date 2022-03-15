@@ -6,6 +6,8 @@ import Swal from 'sweetalert2'
 import axios from 'axios';
 
 function Login() {
+    const [rememberLogin, setRememberLogin] = useState(false) //Check status user form
+
     const navigate = useNavigate();
     const [inputLogin, setLogin] = useState({
         email: '',
@@ -13,6 +15,10 @@ function Login() {
         remamber: '',
         error_list: [],
     });
+
+    const handleRemember = () => {
+        setRememberLogin(!rememberLogin)
+    }
 
     const handleInput = (e) => {
         e.persist();
@@ -25,7 +31,9 @@ function Login() {
         const data = {
             email: inputLogin.email,
             password: inputLogin.password,
+            remember: rememberLogin,
         };
+        console.log(data)
         axios.get(`/sanctum/csrf-cookie`).then(response => {
 
             axios.post(`/api/login`, data).then(res => {
@@ -35,6 +43,8 @@ function Login() {
                         // To store data
                         localStorage.setItem('auth_username', res.data.user.name);
                         localStorage.setItem('auth_token', res.data.user.token);
+
+
 
                         Swal.fire(
                             'Đăng nhập',
@@ -81,7 +91,8 @@ function Login() {
                                     </div>
                                     <div className="d-flex box-btn">
                                         <div className="form-check m-3">
-                                            <input className="form-check-input" name="remember" type="checkbox" id="remember" />
+                                            <input className="form-check-input" name="remember" type="checkbox" id="remember"
+                                            onClick={handleRemember} />
                                             <label className="form-check-label" htmlFor="remember" >
                                                 Lưu đăng nhập
                                             </label>

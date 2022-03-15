@@ -31,12 +31,12 @@ const Navigation = (props) => {
     var renderPrev = "";
     var renderNext = "";
     if(pageState.last_page > 3){
-        if(pageState.current_page !== 1){
+        if(pageState.current_page !== 1 && pageState.current_page > 3){
             renderPrev =   (
                 <li className="page-item"><button className="page-link" onClick={() => handleNav(1)} >Đầu</button></li>
             )
         }
-        if(pageState.current_page !== pageState.last_page){
+        if(pageState.current_page !== pageState.last_page && pageState.current_page+2 <  pageState.last_page){
             renderNext  = (
                 <li className="page-item"><button className="page-link" onClick={() => handleNav(pageState.last_page)} >Cuối</button></li>
             )

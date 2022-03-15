@@ -7,14 +7,16 @@ import Footer  from "./../../layouts/admin/Footer";
 import Navbar  from "./../../layouts/admin/Navbar";
 import Sidebar  from "./../../layouts/admin/Sidebar";
 import Navigation from '../../layouts/admin/Navigation';
+import Loading from '../../layouts/admin/Loading';
 
 function Customers() {
 
-    // const [loading, setLoading] = useState(true); //Loading
+    const [loading, setLoading] = useState(true); //Loading
     const [customers, setCustomers] = useState([]); // fetch customers
     const [pagination, setPagination] = useState({});// Phân trang
     const [titleForm, setTitleForm] = useState('Thêm mới customer') //Title form
     const [checkedStatus, setCheckedStatus] = useState(false) //Check status user form
+    const [inputSearch, setInputSearch] = useState({}) //Form search
     const [customer, setCustomer] = useState({
         customer_id: '',
         customer_name: '',
@@ -31,7 +33,21 @@ function Customers() {
         loadPage(numPage)
     }
 
+    const handleInputSearch = (e) => {
+        setInputSearch({ ...inputSearch, [e.target.name]: e.target.value })
+        console.log(inputSearch)
+    }
+
+    //Xóa tìm kiếm
+    const handleDeleteSearch = () => {
+        loadPage(1)
+        setInputSearch({})
+        console.log(inputSearch)
+    }
+
+    //Call api lấy dsach
     const loadPage = (numPage) => {
+        setLoading(true);
         axios.get(`/api/customers?page=${numPage}`).then(res => {
             if(res.status === 200){
                 setCustomers(res.data.customers.data)
@@ -42,25 +58,29 @@ function Customers() {
                     total: res.data.customers.total,
                     from: res.data.customers.from
                 })
+                setLoading(false);
             }
-            // else{
-            //     setLoading = false;
-            // }
+            else{
+                setLoading(true);
+            }
         }); 
     }
 
+    //Load data sau khi load trang
     useEffect(() =>{
             
         loadPage(numPage);
 
     }, []);
 
+    //set state input
     const handleInput = (e) => {
         setCustomer({ ...customer, [e.target.name]: e.target.value })
         console.log(customer)
         console.log(checkedStatus)
     }
 
+    //Reset input form
     const resetInput = () => {
         setCustomer({
             customer_id: '',
@@ -79,10 +99,12 @@ function Customers() {
 
     const [show, setShow] = useState(false);
 
+    //Đóng modal
     const handleClose = () => {
         resetInput()
         setShow(false)
     };
+
     const handleShow = (id) => {
          // resetInput()
          if(Number.isInteger(id)) {
@@ -115,6 +137,8 @@ function Customers() {
         }
     };
 
+
+    //Thêm mới customer
     const submitCustomer = (e) => {
 
         e.preventDefault()
@@ -144,6 +168,7 @@ function Customers() {
 
     }
 
+    //Cập nhật customer
     const submitUpdateCustomer = (e) => {
 
         e.preventDefault()
@@ -172,6 +197,35 @@ function Customers() {
         }); 
 
     }
+
+     //RENDER
+     var tableHTML = ""
+     if(loading){
+         tableHTML =  (
+             <td colSpan={6}>
+                 <Loading />
+             </td>
+         )
+     }
+     else{
+        tableHTML = 
+        customers?.map((customer, idx) => {
+            return (
+            <tr key={idx}>
+                <td>{customer.customer_id}</td>
+                <td>{customer.customer_name}</td>
+                <td>{customer.email}</td>
+                <td>{customer.tel_num}</td>
+                <td>{customer.address}</td>
+                <td className="text-center">
+                    <span className='icon_btn' onClick={() => handleShow(customer.customer_id)}>
+                        <i className="fa-solid fa-pencil"></i>
+                    </span>
+                </td>
+            </tr>
+            );
+        })
+     }
 
     return (        
     <div className="sb-nav-fixed">
@@ -252,9 +306,45 @@ function Customers() {
                                         <i className="fas fa-table me-1"></i>
                                         Danh sách khách hàng
                                         </span>
-                                        <Button className="btn-add" onClick={handleShow}><i className="fa-solid fa-plus"></i> Thêm mới</Button>
                                     </div>
                                     <div className="card-body">
+                                        
+                                <div className="box-search mt-1">
+                                        <div className="row p-3">
+                                            <div className="col-md-3 mb-1">
+                                                <label htmlFor="name">Tên</label>
+                                                <input type="text" id="name" name="customer_name" className="form-control" placeholder='Nhập họ tên'/>   
+                                            </div>
+                                            <div className="col-md-3 mb-1">
+                                                <label htmlFor="email">Email</label>
+                                                <input type="text" id="email" name="email" className="form-control" placeholder='Nhập email'/>   
+                                            </div>
+                                            <div className="col-md-3  mb-1">
+                                                <label htmlFor="status">Trạng thái</label>
+                                                <select className="form-select" id="status" name="is_active" aria-label="Default select example">
+                                                <option value="" >Chọn trạng thái</option>
+                                                <option value="2">Tất cả</option>
+                                                <option value="1">Đang hoạt động</option>
+                                                <option value="0">Tạm khóa</option>
+                                                </select>
+                                            </div>
+                                            <div className="col-md-3 mb-1">
+                                                <label htmlFor="name">Địa chỉ</label>
+                                                <input type="text" id="name" name="address" className="form-control" placeholder='Nhập địa chỉ'/>   
+                                            </div>
+                                            <div className="col-md-12 mb-1 box-btn-search mt-4">
+                                                <button type="button" className="btn btn-primary btn-search m-1" ><i className="fa-solid fa-magnifying-glass"></i></button>
+                                                &nbsp;
+                                                <button type="button" className="btn btn-danger btn-search m-1" onClick={handleDeleteSearch}><i class="fa-solid fa-x"></i> Xóa tìm</button>
+                                                &nbsp;
+                                                <button type="button" className="btn btn-success btn-search m-1"><i class="fa-solid fa-file-import"></i> Import CSV</button> 
+                                                &nbsp;
+                                                <button type="button" className="btn btn-success btn-search m-1"><i class="fa-solid fa-file-arrow-down"></i> Export CSV</button> 
+                                                &nbsp;
+                                                <button className="btn btn-primary btn-search" onClick={() => handleShow()}><i className="fa-solid fa-plus"></i> Thêm mới</button>
+                                            </div>
+                                        </div>
+                                    </div>
                                         <div className="table-responsive">
                                             <table className="table">
                                                 <thead>
@@ -268,25 +358,9 @@ function Customers() {
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    {/* {tableHTML} */}
                                                     {
-                                                        customers?.map((customer, idx) => {
-                                                            return (
-                                                            <tr key={idx}>
-                                                                <td>{customer.customer_id}</td>
-                                                                <td>{customer.customer_name}</td>
-                                                                <td>{customer.email}</td>
-                                                                <td>{customer.tel_num}</td>
-                                                                <td>{customer.address}</td>
-                                                                <td className="text-center">
-                                                                    <span className='icon_btn' onClick={() => handleShow(customer.customer_id)}>
-                                                                        <i className="fa-solid fa-pencil"></i>
-                                                                    </span>
-                                                                </td>
-                                                            </tr>
-                                                            );
-                                                        })
-                                                    }
+                                                   tableHTML ? tableHTML : <tr><td colSpan={6}>Không có dữ liệu</td> </tr>
+                                                   }
                                                 </tbody>
                                             </table>
                                             <Navigation Paginate={pagination}  childToParent={callBackChildren}/>

@@ -11,14 +11,21 @@ import Footer from "./../../layouts/admin/Footer";
 import Navbar from "./../../layouts/admin/Navbar";
 import Sidebar from "./../../layouts/admin/Sidebar";
 import Navigation from '../../layouts/admin/Navigation';
+import Loading from '../../layouts/admin/Loading';
 
 function Users() {
 
-    // const [loading, setLoading] = useState(true); // loading
+    const [loading, setLoading] = useState(true); // loading
     const [users, setUsers] = useState([]); // fetch users
     const [pagination, setPagination] = useState({}); // paginate
     const [checkedStatus, setCheckedStatus] = useState(false) //Check status user form
     const [titleForm, setTitleForm] = useState('Thêm mới user') //Tiêu đề form
+    const [inputSearch, setInputSearch] = useState({
+        name:  '',
+        email:  '',
+        group_role: '',
+        is_active:  '',
+    }) //Form search
     const [user, setUser] = useState({
         id: '',
         name:  '',
@@ -29,7 +36,34 @@ function Users() {
         error_list: []
     }); //form
 
+    //input search
+    const handleInputSearch = (e) => {
+        setInputSearch({ ...inputSearch, [e.target.name]: e.target.value })
+        console.log(inputSearch)
+    }
+
+    //status rong form sửa /thêm user
     const handleClickStatus = () => setCheckedStatus(!checkedStatus)
+
+    //xử lí tìm kiếm
+    const submitSearch = (e) => {
+        e.preventDefault()
+        numPage = 1;
+        // const formData = new FormData();
+        // formData.append('name', inputSearch.name);
+        // formData.append('email', inputSearch.email);
+        // formData.append('is_active', inputSearch.is_active);
+        // formData.append('group_role', inputSearch.group_role);
+
+        const data = {
+            name: inputSearch.name,
+            email: inputSearch.email,
+            is_active: inputSearch.is_active,
+            group_role: inputSearch.group_role,
+        }
+
+        loadPage(numPage, data);
+    }
 
     //Phân trang 
     var numPage; // Số trang hiện tại
@@ -72,9 +106,11 @@ function Users() {
     }
 
     // Lấy dữ liệu
-    const loadPage = (numPage) => {
+    const loadPage = (numPage, condition) => {
+        setLoading(true);
+        console.log(condition)
         var url = `/api/users/?page=${numPage}`;
-        axios.get(url).then(res => {
+        axios.get(url, condition).then(res => {
             if (res.status === 200) {
                 setUsers(res.data.users.data)
                 setPagination({
@@ -84,10 +120,11 @@ function Users() {
                     total: res.data.users.total,
                     from: res.data.users.from
                 })
+                setLoading(false);
             }
-            // else {
-            //     setLoading = false;
-            // }
+            else {
+                setLoading(true);
+            }
         });
     }
 
@@ -157,7 +194,60 @@ function Users() {
     }
 
     //RENDER
-    // var tableHTML = 
+    var tableHTML = ""
+    if(loading){
+        tableHTML =  (
+            <td colSpan={6}>
+                <Loading />
+            </td>
+        )
+    }
+    else{
+        tableHTML = 
+                users?.map((user, idx) => {
+                    return (
+                        <tr key={idx}>
+                            <td>{user.id}</td>
+                            <td>{user.name}</td>
+                            <td>{user.email}</td>
+                            <td>{user.group_role}</td>
+                            <td>{user.is_active === 1 ? <span className='text-success'>Hoạt động</span> :
+                                <span className='text-danger'>Tạm khóa</span>}</td>
+                            <td className="text-center">
+                                <span className='icon_btn' onClick={() => handleShow(user.id)}>
+                                    <i className="fa-solid fa-pencil"></i>
+                                </span>
+                                <span className='icon_btn' onClick={(e) => deleteHandler(e, user.id)}>
+                                    <i className="fa-solid fa-trash"></i>
+                                </span>
+                                {user.is_active === 1 ?
+                                    <span className='icon_btn' onClick={(e) => unAcitveHandler(e, user.id)}>
+                                        <i className="fa-solid fa-user-check"></i>
+                                    </span>
+                                    :
+                                    <span className='icon_btn' onClick={(e) => acitveHandler(e, user.id)}>
+                                        <i className="fa-solid fa-user-xmark"></i>
+                                    </span>
+                                }
+                            </td>
+                        </tr>
+                    );
+            })
+
+    }
+
+    //Xóa tìm kiếm
+    const handleDeleteSearch = () => {
+        setInputSearch({
+            name:  '',
+            email:  '',
+            group_role: '',
+            is_active:  '',
+        })
+        loadPage(1)
+        document.getElementById("SEARCH-FORM").reset();
+        console.log(inputSearch)
+    }
     
     // RESET DATA
     const resetInput = () => {
@@ -267,6 +357,7 @@ function Users() {
         resetInput()
         setShow(false)
     };
+    //show modal
     const handleShow = (id) => {
         // resetInput()
         if(Number.isInteger(id)) {
@@ -376,9 +467,58 @@ function Users() {
                                         <i className="fas fa-table me-1"></i>
                                         Danh sách người dùng
                                     </span>
-                                    <Button className="btn-add" onClick={() => handleShow()}><i className="fa-solid fa-plus"></i> Thêm mới</Button>
                                 </div>
                                 <div className="card-body">
+
+                                <div className="box-search mt-1">
+                                    <form id="SEARCH-FORM">
+                                        <div className="row p-3">
+                                            <div className="col-md-3 mb-1">
+                                                <label htmlFor="name">Tên</label>
+                                                <input type="text" name="name" value={inputSearch.name} 
+                                                className="form-control"  onChange={handleInputSearch} placeholder='Nhập họ tên'/>   
+                                            </div>
+                                            <div className="col-md-3 mb-1">
+                                                <label htmlFor="name">Email</label>
+                                                <input type="text"  name="email"  value={inputSearch.email}  className="form-control" 
+                                                 onChange={handleInputSearch} placeholder='Nhập email'/>   
+                                            </div>
+                                            <div className="col-md-3  mb-1">
+                                                <label htmlFor="status">Nhóm</label>
+                                                <select className="form-select" id="status" name="group_role" onChange={handleInputSearch}
+                                                  aria-label="Default select example">
+                                                <option value="" >Chọn nhóm</option>
+                                                <option value="Admin">Admin</option>
+                                                <option value="Nhân viên">Nhân viên</option>
+                                                <option value="Quản lí">Quản lí</option>
+                                                </select>
+                                            </div>
+                                            <div className="col-md-3  mb-1">
+                                                <label htmlFor="status">Trạng thái</label>
+                                                <select className="form-select" id="status" name="is_active"  
+                                                onChange={handleInputSearch}  aria-label="Default select example">
+                                                <option value="" >Chọn trạng thái</option>
+                                                <option value="1">Đang hoạt động</option>
+                                                <option value="0">Tạm khóa</option>
+                                                </select>
+                                            </div>
+                                            <div className="col-md-12 mb-1 box-btn-search mt-4">
+                                                <button type="button"  className="btn btn-primary btn-search  m-1" onClick={submitSearch}>
+                                                    <i className="fa-solid fa-magnifying-glass"></i>
+                                                    </button>
+                                                &nbsp;
+                                                <button type="button"  className="btn btn-danger btn-search  m-1" onClick={handleDeleteSearch}>
+                                                    <i class="fa-solid fa-x"></i> Xóa tìm
+                                                    </button>
+                                                &nbsp;
+                                                <button className="btn btn-primary btn-search  m-1" onClick={() => handleShow()}>
+                                                    <i className="fa-solid fa-plus"></i> Thêm mới
+                                                    </button>
+                                            </div>
+                                        </div>
+
+                                    </form>
+                                    </div>
                                     <div className="table-responsive">
                                         <table className="table">
                                             <thead>
@@ -392,37 +532,9 @@ function Users() {
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {
-                                                    users?.map((user, idx) => {
-                                                        return (
-                                                            <tr key={idx}>
-                                                                <td>{user.id}</td>
-                                                                <td>{user.name}</td>
-                                                                <td>{user.email}</td>
-                                                                <td>{user.group_role}</td>
-                                                                <td>{user.is_active === 1 ? <span className='text-success'>Hoạt động</span> :
-                                                                    <span className='text-danger'>Tạm khóa</span>}</td>
-                                                                <td className="text-center">
-                                                                    <span className='icon_btn' onClick={() => handleShow(user.id)}>
-                                                                        <i className="fa-solid fa-pencil"></i>
-                                                                    </span>
-                                                                    <span className='icon_btn' onClick={(e) => deleteHandler(e, user.id)}>
-                                                                        <i className="fa-solid fa-trash"></i>
-                                                                    </span>
-                                                                    {user.is_active === 1 ?
-                                                                        <span className='icon_btn' onClick={(e) => unAcitveHandler(e, user.id)}>
-                                                                            <i className="fa-solid fa-user-check"></i>
-                                                                        </span>
-                                                                        :
-                                                                        <span className='icon_btn' onClick={(e) => acitveHandler(e, user.id)}>
-                                                                            <i className="fa-solid fa-user-xmark"></i>
-                                                                        </span>
-                                                                    }
-                                                                </td>
-                                                            </tr>
-                                                        );
-                                                    })
-                                                }
+                                                { 
+                                                   tableHTML ? tableHTML : <tr ><td colSpan={6}>Không có dữ liệu</td> </tr>
+                                                    }
                                             </tbody>
                                         </table>
                                         <Navigation Paginate={pagination}  childToParent={callBackChildren}/>

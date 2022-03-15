@@ -105,3 +105,16 @@ th{
 .paginate-style {
     float: right;
 }
+
+.box-loading {
+    text-align: center;
+    width: 100%;
+    height: 100px;
+    background: #3333332e;
+    position: relative;
+}
+
+.box-loading-content {
+    position: absolute;
+    top: 40%; 
+}
