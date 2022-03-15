@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react'
+import React, {useState, useEffect, useRef} from 'react'
 import { Modal, Button } from "react-bootstrap";
 import axios from 'axios';
 import Swal from "sweetalert2";
@@ -18,6 +18,7 @@ function Customers() {
     const [checkedStatus, setCheckedStatus] = useState(false) //Check status user form
     const [isResearch, setIsResearch] = useState(true) // kiểm tra data có phải đã được tìm kiếm hay không
 
+    // Customer
     const [customer, setCustomer] = useState({
         customer_id: '',
         customer_name: '',
@@ -34,6 +35,70 @@ function Customers() {
         address:  '',
     }) //Form search
 
+    //Chọn file csv
+    const inputFileRef = useRef( null );
+    const chooseFile = () => {
+        inputFileRef.current.click();
+    }
+
+    const handleCsv = (e) => {
+        
+        // setFileCsv(e.target.files[0]);
+        console.log(e.target.files[0])
+        if(e.target.files[0]){
+            const fileCsv = e.target.files[0];
+            Swal.fire({
+                title: 'Xác nhận?',
+                text: "Import CSV!",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                cancelButtonText: 'Hủy',
+                confirmButtonText: 'OK'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    setLoading(true);
+
+                    const formData = new FormData();
+                    formData.append('file', fileCsv  );
+
+                    axios.post(`api/customers/import/`, formData).then(res => {
+                        if (res.status === 200) {
+                            Swal.fire(
+                                'Import',
+                                res.data.message,
+                                'success'
+                              )
+                              console.log(res.data.customers)
+                              loadPage(numPage)
+                            setLoading(false);
+                        }
+                        else if(res.status === 422){
+                            Swal.fire(
+                                'Import',
+                                res.data.validation_errors.file,
+                                'error'
+                              )
+                        }
+                        else {
+                            Swal.fire(
+                                'Import',
+                                res.data.message,
+                                'error'
+                              )
+                            setLoading(true);
+                        }
+                    });
+                    e.target.value = ""
+                }
+                else{
+                    e.target.value = ""
+                }
+            })
+        }
+    };
+
     var numPage; // Số trang hiện tại
     const callBackChildren = (num) => {
         numPage = num
@@ -41,6 +106,7 @@ function Customers() {
         loadPage(numPage)
     }
 
+    //input search
     const handleInputSearch = (e) => {
         setInputSearch({ ...inputSearch, [e.target.name]: e.target.value })
         console.log(inputSearch)
@@ -415,7 +481,7 @@ function Customers() {
                                                 <button type="button" className="btn btn-danger btn-search m-1" onClick={handleDeleteSearch}>
                                                     <i className="fa-solid fa-x"></i> Xóa tìm</button>
                                                 &nbsp;
-                                                <button type="button" className="btn btn-success btn-search m-1">
+                                                <button type="button" className="btn btn-success btn-search m-1" onClick={chooseFile}>
                                                     <i className="fa-solid fa-file-import"></i> Import CSV</button> 
                                                 &nbsp;
                                                 <button type="button" className="btn btn-success btn-search m-1">
@@ -423,6 +489,7 @@ function Customers() {
                                                 &nbsp;
                                             </div>
                                         </div>
+                                        <input type="file" name="product_image" hidden accept={".csv"} onChange={handleCsv} className="mb-3" ref={inputFileRef} />
                                     </form>
                                     </div>
                                         <div className="table-responsive">
