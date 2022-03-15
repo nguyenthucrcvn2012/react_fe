@@ -20,6 +20,8 @@ function Users() {
     const [pagination, setPagination] = useState({}); // paginate
     const [checkedStatus, setCheckedStatus] = useState(false) //Check status user form
     const [titleForm, setTitleForm] = useState('Thêm mới user') //Tiêu đề form
+    const [isResearch, setIsResearch] = useState(true)
+
     const [inputSearch, setInputSearch] = useState({
         name:  '',
         email:  '',
@@ -39,7 +41,12 @@ function Users() {
     //input search
     const handleInputSearch = (e) => {
         setInputSearch({ ...inputSearch, [e.target.name]: e.target.value })
-        console.log(inputSearch)
+        
+        var formData = new FormData();
+        formData.append('name', inputSearch.name);
+        formData.append('email', inputSearch.email);
+        formData.append('is_active', inputSearch.is_active);
+        formData.append('group_role', inputSearch.group_role);
     }
 
     //status rong form sửa /thêm user
@@ -48,6 +55,16 @@ function Users() {
     //xử lí tìm kiếm
     const submitSearch = (e) => {
         e.preventDefault()
+        filterData()
+    }
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault()
+            filterData()
+          }
+    }
+
+    const filterData = () => {
         numPage = 1;
         // const formData = new FormData();
         // formData.append('name', inputSearch.name);
@@ -55,21 +72,29 @@ function Users() {
         // formData.append('is_active', inputSearch.is_active);
         // formData.append('group_role', inputSearch.group_role);
 
-        const data = {
+        const formData = {
             name: inputSearch.name,
             email: inputSearch.email,
             is_active: inputSearch.is_active,
             group_role: inputSearch.group_role,
         }
-
-        loadPage(numPage, data);
+        // loadPage(1, formData);
+        // console.log(formData)
+        setIsResearch(true)
+        loadPage(1, formData)
+       
     }
 
     //Phân trang 
     var numPage; // Số trang hiện tại
     const callBackChildren = (num) => {
         numPage = num
-        loadPage(numPage)
+        const formData = new FormData();
+        formData.append('name', inputSearch.name);
+        formData.append('email', inputSearch.email);
+        formData.append('is_active', inputSearch.is_active);
+        formData.append('group_role', inputSearch.group_role);
+        loadPage(numPage, formData)
     }
    
     const handleInput = (e) => {
@@ -94,7 +119,12 @@ function Users() {
                 axios.delete(`api/users/${id}`).then(res => {
                     if (res.status === 200) {
                         Swal.fire('Xóa!', res.data.message, 'success')
-                        loadPage(numPage)
+                        const formData = new FormData();
+                        formData.append('name', inputSearch.name);
+                        formData.append('email', inputSearch.email);
+                        formData.append('is_active', inputSearch.is_active);
+                        formData.append('group_role', inputSearch.group_role);
+                        loadPage(numPage, formData)
                     }
                     else if (res.status === 404) {
                         Swal.fire('Xóa!', res.data.message, 'error')
@@ -105,12 +135,9 @@ function Users() {
         })
     }
 
-    // Lấy dữ liệu
-    const loadPage = (numPage, condition) => {
+    const research = (numPage, formData) => {
         setLoading(true);
-        console.log(condition)
-        var url = `/api/users/?page=${numPage}`;
-        axios.get(url, condition).then(res => {
+        axios.post(`api/users/search/?page=${numPage}`, formData).then(res => {
             if (res.status === 200) {
                 setUsers(res.data.users.data)
                 setPagination({
@@ -128,10 +155,39 @@ function Users() {
         });
     }
 
+    // Lấy dữ liệu
+    const loadPage = (numPage, formData) => {
+
+        if(!isResearch) {
+            setLoading(true);
+            axios.get(`/api/users/?page=${numPage}`).then(res => {
+                if (res.status === 200) {
+                    setUsers(res.data.users.data)
+                    setPagination({
+                        current_page: res.data.users.current_page,
+                        last_page: res.data.users.last_page,
+                        to: res.data.users.to,
+                        total: res.data.users.total,
+                        from: res.data.users.from
+                    })
+                    setLoading(false);
+                }
+                else {
+                    setLoading(true);
+                }
+            });
+        }
+        else{
+
+            research(numPage, formData)
+        }
+    }
+
     //Call api sau khi load trang
     useEffect(() => {
 
-        loadPage(numPage)
+        const formData = new FormData();
+        loadPage(numPage, formData)
 
     }, []);
 
@@ -153,7 +209,12 @@ function Users() {
                 axios.put(`api/users/active/${id}`).then(res => {
                     if (res.status === 200) {
                         Swal.fire('Khóa!', res.data.message, 'success')
-                        loadPage(numPage)
+                        const formData = new FormData();
+                        formData.append('name', inputSearch.name);
+                        formData.append('email', inputSearch.email);
+                        formData.append('is_active', inputSearch.is_active);
+                        formData.append('group_role', inputSearch.group_role);
+                        loadPage(numPage, formData)
                     }
                     else if (res.status === 404) {
                         Swal.fire('Khóa!', res.data.message, 'error')
@@ -182,7 +243,12 @@ function Users() {
                 axios.put(`api/users/active/${id}`).then(res => {
                     if (res.status === 200) {
                         Swal.fire('Mở Khóa!', res.data.message, 'success')
-                        loadPage(numPage)
+                        const formData = new FormData();
+                        formData.append('name', inputSearch.name);
+                        formData.append('email', inputSearch.email);
+                        formData.append('is_active', inputSearch.is_active);
+                        formData.append('group_role', inputSearch.group_role);
+                        loadPage(numPage, formData)
                     }
                     else if (res.status === 404) {
                         Swal.fire('Mở Khóa!', res.data.message, 'error')
@@ -247,6 +313,7 @@ function Users() {
         loadPage(1)
         document.getElementById("SEARCH-FORM").reset();
         console.log(inputSearch)
+        setIsResearch(false)
     }
     
     // RESET DATA
@@ -280,14 +347,18 @@ function Users() {
             if(res.data.status === 200){
 
                 Swal.fire('Thêm mới', res.data.user, 'success')
-                loadPage(numPage)
+                const formData = new FormData();
+                formData.append('name', inputSearch.name);
+                formData.append('email', inputSearch.email);
+                formData.append('is_active', inputSearch.is_active);
+                formData.append('group_role', inputSearch.group_role);
+                loadPage(numPage, formData)
                 resetInput()
                 setShow(false)
             }
             else if(res.data.status === 401){
 
                 Swal.fire('Thêm mới', res.data.message, 'success')
-                loadPage(numPage)
             }
             else{
 
@@ -311,13 +382,17 @@ function Users() {
         axios.put(`/api/users/${user.id}`, data).then(res => {
             if(res.data.status === 200){
                 Swal.fire('Cập nhật', res.data.message, 'success')
-                loadPage(numPage)
+                const formData = new FormData();
+                formData.append('name', inputSearch.name);
+                formData.append('email', inputSearch.email);
+                formData.append('is_active', inputSearch.is_active);
+                formData.append('group_role', inputSearch.group_role);
+                loadPage(numPage, formData)
                 resetInput()
                 setShow(false)
             }
             else if(res.data.status === 401){
                 Swal.fire('Cập nhật', res.data.message, 'success')
-                loadPage(numPage)
             }
             else{
                 setUser({...user, error_list: res.data.validation_errors})
@@ -326,6 +401,16 @@ function Users() {
 
     }
     
+    const BtnClearSearch = () => {
+        return (
+            <>
+                <button type="button"  className="btn btn-danger btn-search  m-1" onClick={handleDeleteSearch}>
+                    <i class="fa-solid fa-x"></i> Xóa tìm
+                </button>
+                &nbsp;
+            </>
+        )
+    }
 
     //component password, password_confirm
     const RenderPassword = () => {
@@ -467,6 +552,9 @@ function Users() {
                                         <i className="fas fa-table me-1"></i>
                                         Danh sách người dùng
                                     </span>
+                                    <button className="btn btn-primary btn-search  m-1" onClick={() => handleShow()}>
+                                        <i className="fa-solid fa-plus"></i> Thêm mới
+                                        </button>
                                 </div>
                                 <div className="card-body">
 
@@ -475,13 +563,13 @@ function Users() {
                                         <div className="row p-3">
                                             <div className="col-md-3 mb-1">
                                                 <label htmlFor="name">Tên</label>
-                                                <input type="text" name="name" value={inputSearch.name} 
+                                                <input type="text" name="name" value={inputSearch.name}  onKeyPress={handleKeyDown}
                                                 className="form-control"  onChange={handleInputSearch} placeholder='Nhập họ tên'/>   
                                             </div>
                                             <div className="col-md-3 mb-1">
-                                                <label htmlFor="name">Email</label>
+                                                <label htmlFor="name">Email</label> 
                                                 <input type="text"  name="email"  value={inputSearch.email}  className="form-control" 
-                                                 onChange={handleInputSearch} placeholder='Nhập email'/>   
+                                                 onChange={handleInputSearch} placeholder='Nhập email' onKeyPress={handleKeyDown}/>   
                                             </div>
                                             <div className="col-md-3  mb-1">
                                                 <label htmlFor="status">Nhóm</label>
@@ -507,13 +595,14 @@ function Users() {
                                                     <i className="fa-solid fa-magnifying-glass"></i>
                                                     </button>
                                                 &nbsp;
+                                                {/* {isResearch ? <BtnClearSearch /> : ''} */}
                                                 <button type="button"  className="btn btn-danger btn-search  m-1" onClick={handleDeleteSearch}>
                                                     <i class="fa-solid fa-x"></i> Xóa tìm
-                                                    </button>
-                                                &nbsp;
+                                                </button>
+                                                {/* &nbsp;
                                                 <button className="btn btn-primary btn-search  m-1" onClick={() => handleShow()}>
                                                     <i className="fa-solid fa-plus"></i> Thêm mới
-                                                    </button>
+                                                    </button> */}
                                             </div>
                                         </div>
 

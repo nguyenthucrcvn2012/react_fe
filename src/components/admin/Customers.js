@@ -16,7 +16,8 @@ function Customers() {
     const [pagination, setPagination] = useState({});// Phân trang
     const [titleForm, setTitleForm] = useState('Thêm mới customer') //Title form
     const [checkedStatus, setCheckedStatus] = useState(false) //Check status user form
-    const [inputSearch, setInputSearch] = useState({}) //Form search
+    const [isResearch, setIsResearch] = useState(true) // kiểm tra data có phải đã được tìm kiếm hay không
+
     const [customer, setCustomer] = useState({
         customer_id: '',
         customer_name: '',
@@ -25,6 +26,13 @@ function Customers() {
         tel_num:  '',
         error_list: []
     }); //form
+
+    const [inputSearch, setInputSearch] = useState({
+        customer_name:  '',
+        email:  '',
+        is_active: '',
+        address:  '',
+    }) //Form search
 
     var numPage; // Số trang hiện tại
     const callBackChildren = (num) => {
@@ -43,13 +51,48 @@ function Customers() {
         loadPage(1)
         setInputSearch({})
         console.log(inputSearch)
+        document.getElementById("SEARCH-FORM").reset();
+    }
+    
+    //Tìm kiếm
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault()
+            filterData()
+          }
+    }    
+    const submitSearch = (e) => {
+        e.preventDefault()
+        filterData()
     }
 
-    //Call api lấy dsach
-    const loadPage = (numPage) => {
+    const filterData = () => {
+        numPage = 1;
+        const formData = new FormData();
+        formData.append('customer_name', inputSearch.customer_name);
+        formData.append('email', inputSearch.email);
+        formData.append('address', inputSearch.address);
+        formData.append('is_active', inputSearch.is_active);
+
+        // const formData = {
+        //     name: inputSearch.name,
+        //     email: inputSearch.email,
+        //     is_active: inputSearch.is_active,
+        //     group_role: inputSearch.group_role,
+        // }
+        // loadPage(1, formData);
+        // console.log(formData)
+        setIsResearch(true)
+        loadPage(1, formData)
+       
+    }
+
+
+    //call api filter
+    const research = (numPage, formData) => {
         setLoading(true);
-        axios.get(`/api/customers?page=${numPage}`).then(res => {
-            if(res.status === 200){
+        axios.post(`api/customers/search/?page=${numPage}`, formData).then(res => {
+            if (res.status === 200) {
                 setCustomers(res.data.customers.data)
                 setPagination({
                     current_page: res.data.customers.current_page,
@@ -60,10 +103,37 @@ function Customers() {
                 })
                 setLoading(false);
             }
-            else{
+            else {
                 setLoading(true);
             }
-        }); 
+        });
+    }
+
+    //Call api lấy dsach
+    const loadPage = (numPage, formData) => {
+
+        if(!isResearch) {
+            setLoading(true);
+            axios.get(`/api/customers?page=${numPage}`).then(res => {
+                if(res.status === 200){
+                    setCustomers(res.data.customers.data)
+                    setPagination({
+                        current_page: res.data.customers.current_page,
+                        last_page: res.data.customers.last_page,
+                        to: res.data.customers.to,
+                        total: res.data.customers.total,
+                        from: res.data.customers.from
+                    })
+                    setLoading(false);
+                }
+                else{
+                    setLoading(true);
+                }
+            }); 
+        }
+        else{
+            research(numPage, formData)
+        }
     }
 
     //Load data sau khi load trang
@@ -112,6 +182,7 @@ function Customers() {
             axios.get(`/api/customers/${id}`).then(res => {
                 console.log(res.data)
                 if(res.data.status === 200){
+                    setShow(true)
                     setTitleForm('Chỉnh sửa customer')
                     setCustomer({
                         customer_id: res.data.customer.customer_id,
@@ -122,7 +193,6 @@ function Customers() {
                         error_list: []
                     })
                     setCheckedStatus(res.data.customer.is_active)
-                    setShow(true)
                 }
                 else if(res.data.status === 404){
                     Swal.fire('Lỗi', res.data.message, 'warning')
@@ -240,7 +310,7 @@ function Customers() {
                         <tr>
                             <th scope="col">Tên</th>
                             <th scope="col">
-                                <input type="text" name="customer_name" className="form-control" value={customer.customer_name} 
+                                <input type="text" name="customer_name" className="form-control"  value={customer.customer_name} 
                                 onChange={handleInput} placeholder="Nhập họ tên" />
                                 <span className="text-alert">{customer.error_list.customer_name}</span>
                             </th>
@@ -248,7 +318,7 @@ function Customers() {
                         <tr>
                             <th scope="row">Email</th>
                             <th scope="col">
-                                <input type="email" name="email" className="form-control" value={customer.email} 
+                                <input type="email" name="email"  className="form-control" value={customer.email} 
                                 onChange={handleInput} placeholder="Nhập địa chỉ email" />
                                 <span className="text-alert">{customer.error_list.email}</span>
                             </th>
@@ -306,44 +376,54 @@ function Customers() {
                                         <i className="fas fa-table me-1"></i>
                                         Danh sách khách hàng
                                         </span>
+                                        
+                                        <button className="btn btn-primary btn-search" onClick={() => handleShow()}>
+                                                    <i className="fa-solid fa-plus"></i> Thêm mới</button>
                                     </div>
                                     <div className="card-body">
                                         
                                 <div className="box-search mt-1">
+                                    <form action="" id="SEARCH-FORM">
                                         <div className="row p-3">
                                             <div className="col-md-3 mb-1">
                                                 <label htmlFor="name">Tên</label>
-                                                <input type="text" id="name" name="customer_name" className="form-control" placeholder='Nhập họ tên'/>   
+                                                <input type="text" id="name" name="customer_name" onChange={handleInputSearch}  onKeyPress={handleKeyDown}
+                                                 className="form-control" placeholder='Nhập họ tên'/>   
                                             </div>
                                             <div className="col-md-3 mb-1">
                                                 <label htmlFor="email">Email</label>
-                                                <input type="text" id="email" name="email" className="form-control" placeholder='Nhập email'/>   
+                                                <input type="text" id="email" name="email"  onChange={handleInputSearch} onKeyPress={handleKeyDown}
+                                                 className="form-control" placeholder='Nhập email'/>   
                                             </div>
                                             <div className="col-md-3  mb-1">
                                                 <label htmlFor="status">Trạng thái</label>
-                                                <select className="form-select" id="status" name="is_active" aria-label="Default select example">
+                                                <select className="form-select" id="status" onChange={handleInputSearch} name="is_active" aria-label="Default select example">
                                                 <option value="" >Chọn trạng thái</option>
-                                                <option value="2">Tất cả</option>
                                                 <option value="1">Đang hoạt động</option>
                                                 <option value="0">Tạm khóa</option>
                                                 </select>
                                             </div>
                                             <div className="col-md-3 mb-1">
                                                 <label htmlFor="name">Địa chỉ</label>
-                                                <input type="text" id="name" name="address" className="form-control" placeholder='Nhập địa chỉ'/>   
+                                                <input type="text" id="name" name="address" onChange={handleInputSearch} onKeyPress={handleKeyDown}
+                                                 className="form-control" placeholder='Nhập địa chỉ'/>   
                                             </div>
                                             <div className="col-md-12 mb-1 box-btn-search mt-4">
-                                                <button type="button" className="btn btn-primary btn-search m-1" ><i className="fa-solid fa-magnifying-glass"></i></button>
+                                                <button type="button" className="btn btn-primary btn-search m-1" onClick={submitSearch}>
+                                                    <i className="fa-solid fa-magnifying-glass"></i></button>
                                                 &nbsp;
-                                                <button type="button" className="btn btn-danger btn-search m-1" onClick={handleDeleteSearch}><i class="fa-solid fa-x"></i> Xóa tìm</button>
+                                                <button type="button" className="btn btn-danger btn-search m-1" onClick={handleDeleteSearch}>
+                                                    <i className="fa-solid fa-x"></i> Xóa tìm</button>
                                                 &nbsp;
-                                                <button type="button" className="btn btn-success btn-search m-1"><i class="fa-solid fa-file-import"></i> Import CSV</button> 
+                                                <button type="button" className="btn btn-success btn-search m-1">
+                                                    <i className="fa-solid fa-file-import"></i> Import CSV</button> 
                                                 &nbsp;
-                                                <button type="button" className="btn btn-success btn-search m-1"><i class="fa-solid fa-file-arrow-down"></i> Export CSV</button> 
+                                                <button type="button" className="btn btn-success btn-search m-1">
+                                                    <i className="fa-solid fa-file-arrow-down"></i> Export CSV</button> 
                                                 &nbsp;
-                                                <button className="btn btn-primary btn-search" onClick={() => handleShow()}><i className="fa-solid fa-plus"></i> Thêm mới</button>
                                             </div>
                                         </div>
+                                    </form>
                                     </div>
                                         <div className="table-responsive">
                                             <table className="table">
