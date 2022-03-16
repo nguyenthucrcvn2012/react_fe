@@ -193,7 +193,7 @@ function Product() {
     const loadPage = (numPage, condition) => {
         setLoading(true);
         axios.get(`/api/products?page=${numPage}`, condition).then(res => {
-            if(res.status === 200){
+            if(res.data.status === 200){
                 setProducts(res.data.products.data)
                 setPagination({
                     current_page: res.data.products.current_page,
@@ -225,11 +225,11 @@ function Product() {
             if (result.isConfirmed) {
 
                 axios.delete(`api/products/${id}`).then(res => {
-                    if (res.status === 200) {
+                    if (res.data.status === 200) {
                         Swal.fire('Xóa!', res.data.message, 'success')
                         loadPage(numPage)
                     }
-                    else if (res.status === 404) {
+                    else if (res.data.status === 404) {
                         Swal.fire('Xóa!', res.data.message, 'error')
                     }
                 });

@@ -117,7 +117,7 @@ function Users() {
             if (result.isConfirmed) {
 
                 axios.delete(`api/users/${id}`).then(res => {
-                    if (res.status === 200) {
+                    if (res.data.status === 200) {
                         Swal.fire('Xóa!', res.data.message, 'success')
                         const formData = new FormData();
                         formData.append('name', inputSearch.name);
@@ -126,7 +126,7 @@ function Users() {
                         formData.append('group_role', inputSearch.group_role);
                         loadPage(numPage, formData)
                     }
-                    else if (res.status === 404) {
+                    else if (res.data.status === 404) {
                         Swal.fire('Xóa!', res.data.message, 'error')
                     }
                 });
@@ -138,7 +138,7 @@ function Users() {
     const research = (numPage, formData) => {
         setLoading(true);
         axios.post(`api/users/search/?page=${numPage}`, formData).then(res => {
-            if (res.status === 200) {
+            if (res.data.status === 200) {
                 setUsers(res.data.users.data)
                 setPagination({
                     current_page: res.data.users.current_page,
@@ -161,7 +161,7 @@ function Users() {
         if(!isResearch) {
             setLoading(true);
             axios.get(`/api/users/?page=${numPage}`).then(res => {
-                if (res.status === 200) {
+                if (res.data.status === 200) {
                     setUsers(res.data.users.data)
                     setPagination({
                         current_page: res.data.users.current_page,
@@ -207,7 +207,7 @@ function Users() {
             if (result.isConfirmed) {
 
                 axios.put(`api/users/active/${id}`).then(res => {
-                    if (res.status === 200) {
+                    if (res.data.status === 200) {
                         Swal.fire('Khóa!', res.data.message, 'success')
                         const formData = new FormData();
                         formData.append('name', inputSearch.name);
@@ -216,7 +216,7 @@ function Users() {
                         formData.append('group_role', inputSearch.group_role);
                         loadPage(numPage, formData)
                     }
-                    else if (res.status === 404) {
+                    else if (res.data.status === 404) {
                         Swal.fire('Khóa!', res.data.message, 'error')
                     }
                 });
@@ -241,7 +241,7 @@ function Users() {
             if (result.isConfirmed) {
 
                 axios.put(`api/users/active/${id}`).then(res => {
-                    if (res.status === 200) {
+                    if (res.data.status === 200) {
                         Swal.fire('Mở Khóa!', res.data.message, 'success')
                         const formData = new FormData();
                         formData.append('name', inputSearch.name);
@@ -250,7 +250,7 @@ function Users() {
                         formData.append('group_role', inputSearch.group_role);
                         loadPage(numPage, formData)
                     }
-                    else if (res.status === 404) {
+                    else if (res.data.status === 404) {
                         Swal.fire('Mở Khóa!', res.data.message, 'error')
                     }
                 });

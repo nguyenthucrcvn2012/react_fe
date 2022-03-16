@@ -41,6 +41,41 @@ function Customers() {
         inputFileRef.current.click();
     }
 
+    //export CSV 
+    const exportCsv = (e) => {
+
+        const formData = new FormData();
+        formData.append('customer_name', inputSearch.customer_name);
+        formData.append('email', inputSearch.email);
+        formData.append('address', inputSearch.address);
+        formData.append('is_active', inputSearch.is_active);
+        console.log(formData)
+        
+        axios.post(`api/customers/export/`, formData).then(res => {
+
+            console.log(res.data)
+
+            var downloadLink = document.createElement("a");
+            var fileData = ['\ufeff'+res.data];
+
+            var blobObject = new Blob(fileData,{
+               type: "text/csv;charset=utf-8;"
+             });
+
+            var url = URL.createObjectURL(blobObject);
+            downloadLink.href = url;
+            downloadLink.download = "customers.csv";
+
+            /*
+             * Actually download CSV
+             */
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+        });
+    }
+
+    //import CSV
     const handleCsv = (e) => {
         
         // setFileCsv(e.target.files[0]);
@@ -64,22 +99,32 @@ function Customers() {
                     formData.append('file', fileCsv  );
 
                     axios.post(`api/customers/import/`, formData).then(res => {
-                        if (res.status === 200) {
+                        console.log(res.data)
+                        if (res.data.status === 200) {
+
                             Swal.fire(
                                 'Import',
                                 res.data.message,
                                 'success'
-                              )
-                              console.log(res.data.customers)
-                              loadPage(numPage)
+                            )
+                            loadPage(numPage)
                             setLoading(false);
                         }
-                        else if(res.status === 422){
+                        else if(res.data.status === 422){
                             Swal.fire(
                                 'Import',
-                                res.data.validation_errors.file,
+                                res.data.message,
                                 'error'
                               )
+                              setLoading(false);
+                        }
+                        else if(res.data.status === 401){
+                            Swal.fire(
+                                'Import',
+                                res.data.message,
+                                'error'
+                              )
+                              setLoading(false);
                         }
                         else {
                             Swal.fire(
@@ -87,7 +132,7 @@ function Customers() {
                                 res.data.message,
                                 'error'
                               )
-                            setLoading(true);
+                              setLoading(false);
                         }
                     });
                     e.target.value = ""
@@ -158,7 +203,7 @@ function Customers() {
     const research = (numPage, formData) => {
         setLoading(true);
         axios.post(`api/customers/search/?page=${numPage}`, formData).then(res => {
-            if (res.status === 200) {
+            if ( res.data.status === 200) {
                 setCustomers(res.data.customers.data)
                 setPagination({
                     current_page: res.data.customers.current_page,
@@ -181,7 +226,7 @@ function Customers() {
         if(!isResearch) {
             setLoading(true);
             axios.get(`/api/customers?page=${numPage}`).then(res => {
-                if(res.status === 200){
+                if(res.data.status === 200){
                     setCustomers(res.data.customers.data)
                     setPagination({
                         current_page: res.data.customers.current_page,
@@ -198,14 +243,15 @@ function Customers() {
             }); 
         }
         else{
+
             research(numPage, formData)
         }
     }
 
     //Load data sau khi load trang
     useEffect(() =>{
-            
-        loadPage(numPage);
+        const formData = new FormData();
+        loadPage(numPage, formData);
 
     }, []);
 
@@ -484,7 +530,7 @@ function Customers() {
                                                 <button type="button" className="btn btn-success btn-search m-1" onClick={chooseFile}>
                                                     <i className="fa-solid fa-file-import"></i> Import CSV</button> 
                                                 &nbsp;
-                                                <button type="button" className="btn btn-success btn-search m-1">
+                                                <button type="button" className="btn btn-success btn-search m-1" onClick={exportCsv}>
                                                     <i className="fa-solid fa-file-arrow-down"></i> Export CSV</button> 
                                                 &nbsp;
                                             </div>
@@ -506,7 +552,7 @@ function Customers() {
                                                 </thead>
                                                 <tbody>
                                                     {
-                                                   tableHTML ? tableHTML : <tr><td colSpan={6}>Không có dữ liệu</td> </tr>
+                                                   tableHTML ? tableHTML : <tr ><td colSpan={6}>Không có dữ liệu</td> </tr>
                                                    }
                                                 </tbody>
                                             </table>
