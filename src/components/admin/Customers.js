@@ -396,11 +396,13 @@ function Customers() {
      }
      else{
          if(customers.length > 0) {
+            let numberCustomer = pagination.current_page * 10;
             tableHTML = 
             customers?.map((customer, idx) => {
+                let numUser = idx + 1 + numberCustomer - 10 ;
                 return (
                 <tr key={idx}>
-                    <td>{customer.customer_id}</td>
+                    <td>{numUser}</td>
                     <td>{customer.customer_name}</td>
                     <td>{customer.email}</td>
                     <td>{customer.tel_num}</td>

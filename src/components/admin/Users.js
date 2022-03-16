@@ -16,12 +16,11 @@ import Loading from '../../layouts/admin/Loading';
 function Users() {
 
     const [loading, setLoading] = useState(true); // loading
-    const [users, setUsers] = useState([]); // fetch users
-    const [pagination, setPagination] = useState({}); // paginate
+    const [users, setUsers] = useState([]); // danh sách user
+    const [pagination, setPagination] = useState({}); // phân trang
     const [checkedStatus, setCheckedStatus] = useState(false) //Check status user form
     const [titleForm, setTitleForm] = useState('Thêm mới user') //Tiêu đề form
-    const [isResearch, setIsResearch] = useState(true)
-
+    const [isResearch, setIsResearch] = useState(true) // check xem có đang tìm kiếm k
     const [inputSearch, setInputSearch] = useState({
         name:  '',
         email:  '',
@@ -36,7 +35,7 @@ function Users() {
         password_confirm: '',
         group_role: '',
         error_list: []
-    }); //form
+    }); //form tạo / sửa user
 
     //input search
     const handleInputSearch = (e) => {
@@ -64,6 +63,8 @@ function Users() {
           }
     }
 
+
+    //Filter
     const filterData = () => {
         numPage = 1;
         // const formData = new FormData();
@@ -97,6 +98,7 @@ function Users() {
         loadPage(numPage, formData)
     }
    
+    //input form user
     const handleInput = (e) => {
         setUser({ ...user, [e.target.name]: e.target.value })
     }
@@ -270,36 +272,41 @@ function Users() {
         )
     }
     else{
+        //Kiem tra xem có user nào k
         if(users.length > 0) {
+             
+            let numberUser = pagination.current_page * 10;
             tableHTML = 
              users?.map((user, idx) => {
-                    return (
-                        <tr key={idx}>
-                            <td>{user.id}</td>
-                            <td>{user.name}</td>
-                            <td>{user.email}</td>
-                            <td>{user.group_role}</td>
-                            <td>{user.is_active === 1 ? <span className='text-success'>Hoạt động</span> :
-                                <span className='text-danger'>Tạm khóa</span>}</td>
-                            <td className="text-center">
-                                <span className='icon_btn' onClick={() => handleShow(user.id)}>
-                                    <i className="fa-solid fa-pencil"></i>
+
+                let numUser = idx + 1 + numberUser - 10 ;
+                return (
+                    <tr key={idx}>
+                        <td>{numUser}</td>
+                        <td>{user.name}</td>
+                        <td>{user.email}</td>
+                        <td>{user.group_role}</td>
+                        <td>{user.is_active === 1 ? <span className='text-success'>Hoạt động</span> :
+                            <span className='text-danger'>Tạm khóa</span>}</td>
+                        <td className="text-center">
+                            <span className='icon_btn' onClick={() => handleShow(user.id)}>
+                                <i className="fa-solid fa-pencil"></i>
+                            </span>
+                            <span className='icon_btn' onClick={(e) => deleteHandler(e, user.id)}>
+                                <i className="fa-solid fa-trash"></i>
+                            </span>
+                            {user.is_active === 1 ?
+                                <span className='icon_btn' onClick={(e) => unAcitveHandler(e, user.id)}>
+                                    <i className="fa-solid fa-user-check"></i>
                                 </span>
-                                <span className='icon_btn' onClick={(e) => deleteHandler(e, user.id)}>
-                                    <i className="fa-solid fa-trash"></i>
+                                :
+                                <span className='icon_btn' onClick={(e) => acitveHandler(e, user.id)}>
+                                    <i className="fa-solid fa-user-xmark"></i>
                                 </span>
-                                {user.is_active === 1 ?
-                                    <span className='icon_btn' onClick={(e) => unAcitveHandler(e, user.id)}>
-                                        <i className="fa-solid fa-user-check"></i>
-                                    </span>
-                                    :
-                                    <span className='icon_btn' onClick={(e) => acitveHandler(e, user.id)}>
-                                        <i className="fa-solid fa-user-xmark"></i>
-                                    </span>
-                                }
-                            </td>
-                        </tr>
-                    );
+                            }
+                        </td>
+                    </tr>
+                );
                
             })
         }
@@ -451,6 +458,7 @@ function Users() {
         resetInput()
         setShow(false)
     };
+    
     //show modal
     const handleShow = (id) => {
         // resetInput()
