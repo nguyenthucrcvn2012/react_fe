@@ -150,7 +150,8 @@ function Users() {
                 setLoading(false);
             }
             else {
-                setLoading(true);
+                Swal.fire('Tìm kiếm', res.data.message, 'wanring')
+                setLoading(false);
             }
         });
     }
@@ -269,8 +270,9 @@ function Users() {
         )
     }
     else{
-        tableHTML = 
-                users?.map((user, idx) => {
+        if(users.length > 0) {
+            tableHTML = 
+             users?.map((user, idx) => {
                     return (
                         <tr key={idx}>
                             <td>{user.id}</td>
@@ -298,7 +300,14 @@ function Users() {
                             </td>
                         </tr>
                     );
+               
             })
+        }
+        else {
+            tableHTML = (
+                <tr ><td colSpan={6}>Không có dữ liệu</td> </tr>
+            )
+        }
 
     }
 
@@ -401,16 +410,16 @@ function Users() {
 
     }
     
-    const BtnClearSearch = () => {
-        return (
-            <>
-                <button type="button"  className="btn btn-danger btn-search  m-1" onClick={handleDeleteSearch}>
-                    <i class="fa-solid fa-x"></i> Xóa tìm
-                </button>
-                &nbsp;
-            </>
-        )
-    }
+    // const BtnClearSearch = () => {
+    //     return (
+    //         <>
+    //             <button type="button"  className="btn btn-danger btn-search  m-1" onClick={handleDeleteSearch}>
+    //                 <i class="fa-solid fa-x"></i> Xóa tìm
+    //             </button>
+    //             &nbsp;
+    //         </>
+    //     )
+    // }
 
     //component password, password_confirm
     const RenderPassword = () => {
@@ -621,9 +630,7 @@ function Users() {
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                { 
-                                                   tableHTML ? tableHTML : <tr ><td colSpan={6}>Không có dữ liệu</td> </tr>
-                                                    }
+                                                { tableHTML }
                                             </tbody>
                                         </table>
                                         <Navigation Paginate={pagination}  childToParent={callBackChildren}/>

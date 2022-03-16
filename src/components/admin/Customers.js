@@ -146,9 +146,14 @@ function Customers() {
 
     var numPage; // Số trang hiện tại
     const callBackChildren = (num) => {
+        const formData = new FormData();
+        formData.append('customer_name', inputSearch.customer_name);
+        formData.append('email', inputSearch.email);
+        formData.append('address', inputSearch.address);
+        formData.append('is_active', inputSearch.is_active);
         numPage = num
         console.log(numPage)
-        loadPage(numPage)
+        loadPage(numPage, formData)
     }
 
     //input search
@@ -215,7 +220,7 @@ function Customers() {
                 setLoading(false);
             }
             else {
-                setLoading(true);
+                setLoading(false);
             }
         });
     }
@@ -238,12 +243,12 @@ function Customers() {
                     setLoading(false);
                 }
                 else{
+                    Swal.fire('Tìm kiếm', res.data.message, 'wanring')
                     setLoading(true);
                 }
             }); 
         }
         else{
-
             research(numPage, formData)
         }
     }
@@ -390,23 +395,30 @@ function Customers() {
          )
      }
      else{
-        tableHTML = 
-        customers?.map((customer, idx) => {
-            return (
-            <tr key={idx}>
-                <td>{customer.customer_id}</td>
-                <td>{customer.customer_name}</td>
-                <td>{customer.email}</td>
-                <td>{customer.tel_num}</td>
-                <td>{customer.address}</td>
-                <td className="text-center">
-                    <span className='icon_btn' onClick={() => handleShow(customer.customer_id)}>
-                        <i className="fa-solid fa-pencil"></i>
-                    </span>
-                </td>
-            </tr>
-            );
-        })
+         if(customers.length > 0) {
+            tableHTML = 
+            customers?.map((customer, idx) => {
+                return (
+                <tr key={idx}>
+                    <td>{customer.customer_id}</td>
+                    <td>{customer.customer_name}</td>
+                    <td>{customer.email}</td>
+                    <td>{customer.tel_num}</td>
+                    <td>{customer.address}</td>
+                    <td className="text-center">
+                        <span className='icon_btn' onClick={() => handleShow(customer.customer_id)}>
+                            <i className="fa-solid fa-pencil"></i>
+                        </span>
+                    </td>
+                </tr>
+                );
+            })
+        }
+        else {
+            tableHTML = (
+                <tr ><td colSpan={6}>Không có dữ liệu</td> </tr>
+            )
+        }
      }
 
     return (        
@@ -551,9 +563,7 @@ function Customers() {
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    {
-                                                   tableHTML ? tableHTML : <tr ><td colSpan={6}>Không có dữ liệu</td> </tr>
-                                                   }
+                                                    { tableHTML }
                                                 </tbody>
                                             </table>
                                             <Navigation Paginate={pagination}  childToParent={callBackChildren}/>
