@@ -17,13 +17,29 @@ function Customers() {
     const [titleForm, setTitleForm] = useState('Thêm mới customer') //Title form
     const [checkedStatus, setCheckedStatus] = useState(false) //Check status user form
     const [isResearch, setIsResearch] = useState(true) // kiểm tra data có phải đã được tìm kiếm hay không
+
+    const [isEdit, setIsEdit] = useState(null);
+
     // var isResearch = true;
 
-    //edit customer
-    const editRowCustomer = (id) => {
-
-        
+        //edit customer
+    const editRowCustomer = (id, name, tel, address, email) => {
+        setCustomer({
+            customer_name:  name,
+            email:  email,
+            tel_num: tel,
+            address:  address,
+            customer_id:  id,
+            error_list: []
+        })
+        setIsEdit(id)
     }
+
+    const handleInputEditRow = (e) => {
+        setCustomer({ ...customer, [e.target.name] : e.target.value })
+        console.log(customer)
+    }
+    
 
     // Customer
     const [customer, setCustomer] = useState({
@@ -202,7 +218,6 @@ function Customers() {
        
     }
 
-
     //call api filter
     const research = (numPage, formData) => {
         setLoading(true);
@@ -242,8 +257,8 @@ function Customers() {
                     setLoading(false);
                 }
                 else{
-                    Swal.fire('Tìm kiếm', res.data.message, 'wanring')
-                    setLoading(true);
+                    Swal.fire('Tìm kiếm', res.data.message, 'warning')
+                    setLoading(false);
                 }
             }); 
         }
@@ -289,6 +304,7 @@ function Customers() {
     const handleClose = () => {
         resetInput()
         setShow(false)
+        setIsEdit(null)
     };
 
     const handleShow = (id) => {
@@ -365,23 +381,28 @@ function Customers() {
             tel_num: customer.tel_num,
             is_active: checkedStatus,
         }
+        const formData = new FormData();
+        formData.append('customer_name', inputSearch.customer_name);
+        formData.append('email', inputSearch.email);
+        formData.append('address', inputSearch.address);
+        formData.append('is_active', inputSearch.is_active);
 
         axios.put(`/api/customers/${customer.customer_id}`, data).then(res => {
             if(res.data.status === 200){
                 Swal.fire('Cập nhật', res.data.message, 'success')
-                loadPage(numPage)
+                loadPage(numPage, formData)
                 resetInput()
                 setShow(false)
+                setIsEdit(null)
             }
             else if(res.data.status === 401){
                 Swal.fire('Cập nhật', res.data.message, 'success')
-                loadPage(numPage)
+                loadPage(numPage, formData)
             }
             else{
                 setCustomer({...customer, error_list: res.data.validation_errors})
             }
         }); 
-
     }
 
      //RENDER
@@ -396,21 +417,49 @@ function Customers() {
      else if(customers.length > 0) {
             let numberCustomer = pagination.current_page * 10;
             tableHTML = 
-            customers?.map((customer, idx) => {
+            customers?.map((cus, idx) => {
                 let numUser = idx + 1 + numberCustomer - 10 ;
                 return (
                 <tr key={idx} id={numUser}>
                     <td>{numUser}</td>
-                    <td><input type="text" className='' value={customer.customer_name} /> </td>
-                    <td><input type="text" className='' value={customer.email} /> </td>
-                    <td><input type="text" className='' value={customer.tel_num} /> </td>
-                    <td><input type="text" className='' value={customer.address} /> </td>
+                    <td> 
+                        <p>{isEdit === cus.customer_id ?  <input type="text"  name="customer_name" onChange={handleInputEditRow} value={customer.customer_name} />
+                         :
+                         <span>{cus.customer_name}</span> }</p>  <p className='text-danger'>{isEdit === cus.customer_id ? customer.error_list.customer_name : ''}</p>
+                    </td>
+                    <td> 
+                        <p>{isEdit === cus.customer_id ? <input type="text" name="email" onChange={handleInputEditRow}  value={customer.email} /> 
+                        :
+                         <span>{cus.email}</span> }  </p>  <p className='text-danger'>{isEdit === cus.customer_id ? customer.error_list.email : ''}</p>
+                    </td>
+                    <td> 
+                        <p>{isEdit === cus.customer_id ? <input type="text"  name="tel_num" onChange={handleInputEditRow} value={customer.tel_num} /> 
+                        : 
+                        <span>{cus.tel_num}</span> }  </p>  <p className='text-danger'>{isEdit === cus.customer_id ? customer.error_list.tel_num : ''}</p>
+                    </td>
+                    <td> 
+                        <p>{isEdit === cus.customer_id ? <input type="text" name="address"  onChange={handleInputEditRow} value={customer.address} />
+                         :
+                          <span>{cus.address}</span> } </p>  <p className='text-danger'>{isEdit === cus.customer_id ? customer.error_list.address : ''}</p> 
+                    </td>
                     <td className="text-center">
-                        <span className='icon_btn' onClick={() => editRowCustomer(customer.customer_id)}>
+                        { isEdit === cus.customer_id ?  
+                        <>
+                            <span className='icon_btn' onClick={submitUpdateCustomer}>
+                                <i className="fa-solid fa-check"></i>
+                            </span> 
+                            <span className='icon_btn' onClick={() => setIsEdit(null)}>
+                                <i className="fa-solid fa-x"></i>
+                            </span>
+                        </>
+                         : 
+                        <span className='icon_btn' onClick={() => editRowCustomer(cus.customer_id, cus.customer_name, cus.tel_num, cus.address, cus.email)}>
                             <i className="fa-solid fa-pencil"></i>
                         </span>
-                        <span className='icon_btn' onClick={() => handleShow(customer.customer_id)}>
-                            <i className="fa-solid fa-pencil"></i>
+                        }
+                       
+                        <span className='icon_btn' onClick={() => handleShow(cus.customer_id)}>
+                            <i className="fa-solid fa-pen-fancy"></i>
                         </span>
                     </td>
                 </tr>

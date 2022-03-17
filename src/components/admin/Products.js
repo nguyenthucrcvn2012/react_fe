@@ -17,6 +17,7 @@ function Product() {
     const [pagination, setPagination] = useState({});// Phân trang
     const [titleForm, setTitleForm] = useState('Thêm mới sản phẩm') //Tiêu đề form
     const [inputSearch, setInputSearch] = useState({}) //Form search
+    const [isResearch, setIsResearch] = useState(true) // kiểm tra data có phải đã được tìm kiếm hay không
 
     const [product, setProduct] = useState({
 
@@ -34,6 +35,12 @@ function Product() {
         setInputSearch({ ...inputSearch, [e.target.name]: e.target.value })
         console.log(inputSearch)
     }
+
+    const submitSearch = (e) => {
+        e.preventDefault()
+        loadPage(1)
+    }
+
 
     //Hình mặc định
     var noimg = require('../../assets/images/noimage.png')
@@ -71,6 +78,8 @@ function Product() {
         loadPage(1)
         setInputSearch({})
         console.log(inputSearch)
+        setIsResearch(false)
+        document.getElementById("SEARCH-FORM").reset();
     }
 
     //Đóng mở modal form
@@ -117,6 +126,7 @@ function Product() {
         return (
             <tr key={idx}>
                 <td>{numPro}</td>
+                <td>{pro.product_id}</td>
                 <td>{pro.product_name}</td>
                 <td>{pro.description}</td>
                 <td>{pro.product_price}</td>
@@ -198,24 +208,54 @@ function Product() {
     // }
 
     //Hàm call api lấy danh sách sp
-    const loadPage = (numPage, condition) => {
+    const loadPage = (numPage) => {
+
         setLoading(true);
-        axios.get(`/api/products?page=${numPage}`, condition).then(res => {
-            if(res.data.status === 200){
-                setProducts(res.data.products.data)
-                setPagination({
-                    current_page: res.data.products.current_page,
-                    last_page: res.data.products.last_page,
-                    to: res.data.products.to,
-                    total: res.data.products.total,
-                    from: res.data.products.from
-                })
-                setLoading(false);
-            }
-            else{
-                setLoading(true);
-            }
-        }); 
+
+        if(!isResearch) {
+            axios.get(`/api/products?page=${numPage}`).then(res => {
+                if(res.data.status === 200){
+                    setProducts(res.data.products.data)
+                    setPagination({
+                        current_page: res.data.products.current_page,
+                        last_page: res.data.products.last_page,
+                        to: res.data.products.to,
+                        total: res.data.products.total,
+                        from: res.data.products.from
+                    })
+                    setLoading(false);
+                }
+                else{
+                    setLoading(true);
+                }
+            }); 
+        }
+        else{
+
+        
+            const formData = new FormData();
+            formData.append('product_name', inputSearch.product_name);
+            formData.append('is_sales', inputSearch.is_sales);
+            formData.append('price_to', inputSearch.price_to);
+            formData.append('price_from', inputSearch.price_from);
+            axios.post(`/api/products/search?page=${numPage}`, formData).then(res => {
+                if(res.data.status === 200){
+                    setProducts(res.data.products.data)
+                    setPagination({
+                        current_page: res.data.products.current_page,
+                        last_page: res.data.products.last_page,
+                        to: res.data.products.to,
+                        total: res.data.products.total,
+                        from: res.data.products.from
+                    })
+                    setLoading(false);
+                }
+                else{
+                    Swal.fire('Tìm kiếm', res.data.message, 'warning')
+                    setLoading(false);
+                }
+            }); 
+        }
     }
 
     //Xóa sản phẩm
@@ -294,8 +334,8 @@ function Product() {
                                     <select className="form-select" onChange={handleInput} name="is_sales" 
                                     aria-label="Default select example">
                                         <option value="" >Chọn trạng thái</option>
-                                        <option value="1" selected={product.is_sales == '1' ? 'selected' : ''}>Còn hàng</option>
-                                        <option value="0" selected={product.is_sales == '0' ? 'selected' : ''}>Hết hàng</option>
+                                        <option value="1" selected={product.is_sales === '1' ? 'selected' : ''}>Còn hàng</option>
+                                        <option value="0" selected={product.is_sales === '0' ? 'selected' : ''}>Hết hàng</option>
                                     </select>
                                     <span className="text-alert">{product.error_list.is_sales}</span>
                                 </th>
@@ -350,41 +390,45 @@ function Product() {
                                 </div>
                                 <div className="card-body">
 
-                                    <div className="box-search mt-1">
-                                        <div className="row p-3">
-                                            <div className="col-md-3 mb-1">
-                                                <label htmlFor="name">Tên sản phẩm</label>
-                                                <input type="text" name="name"  className="form-control" value={inputSearch.name} onChange={handleInputSearch} placeholder='Nhập tên sản phẩm'/>   
-                                            </div>
-                                            <div className="col-md-3  mb-1">
-                                                <label htmlFor="status">Trạng thái</label>
-                                                <select className="form-select" name="is_sales" onChange={handleInputSearch} value={inputSearch.is_sales} aria-label="Default select example">
-                                                <option value="" disabled>Chọn trạng thái</option>
-                                                <option value="1">Đang bán</option>
-                                                <option value="0">Ngừng bán</option>
-                                                </select>
-                                            </div>
-                                            <div className="col-md-3 col-6 mb-1">
-                                                <label htmlFor="price_from">Giá bán từ</label>
-                                                <input type="number" onChange={handleInputSearch} value={inputSearch.price_from}  className="form-control" name='price_from'/>   
-                                            </div>
-                                            <div className="col-md-3 col-6 mb-1">
-                                                <label htmlFor="price_to">Giá bán đến</label>
-                                                <input type="number" onChange={handleInputSearch} value={inputSearch.price_to}  className="form-control" name='price_to'/>   
-                                            </div>
-                                            <div className="col-md-12 col-12 mb-1 box-btn-search mt-4">
-                                                <button type="button"  className="btn btn-primary btn-search  m-1" ><i className="fa-solid fa-magnifying-glass"></i></button>
-                                                &nbsp;
-                                                <button type="button"  className="btn btn-danger btn-search  m-1" onClick={handleDeleteSearch}><i className="fa-solid fa-x"></i> Xóa tìm</button> 
-                                                &nbsp;
-                                                <button className="btn-primary btn btn-search  m-1" onClick={handleShow}><i className="fa-solid fa-plus"></i> Thêm mới</button>
+                                    <form action="" id="SEARCH-FORM">
+
+                                        <div className="box-search mt-1">
+                                            <div className="row p-3">
+                                                <div className="col-md-3 mb-1">
+                                                    <label htmlFor="name">Tên sản phẩm</label>
+                                                    <input type="text" name="product_name"  className="form-control" value={inputSearch.product_name} onChange={handleInputSearch} placeholder='Nhập tên sản phẩm'/>   
+                                                </div>
+                                                <div className="col-md-3  mb-1">
+                                                    <label htmlFor="status">Trạng thái</label>
+                                                    <select className="form-select" name="is_sales" onChange={handleInputSearch} value={inputSearch.is_sales} aria-label="Default select example">
+                                                    <option value="" >Chọn trạng thái</option>
+                                                    <option value="1">Đang bán</option>
+                                                    <option value="0">Ngừng bán</option>
+                                                    </select>
+                                                </div>
+                                                <div className="col-md-3 col-6 mb-1">
+                                                    <label htmlFor="price_from">Giá bán từ</label>
+                                                    <input type="number" onChange={handleInputSearch} value={inputSearch.price_from}  className="form-control" name="price_from"/>   
+                                                </div>
+                                                <div className="col-md-3 col-6 mb-1">
+                                                    <label htmlFor="price_to">Giá bán đến</label>
+                                                    <input type="number" onChange={handleInputSearch} value={inputSearch.price_to}  className="form-control" name="price_to"/>   
+                                                </div>
+                                                <div className="col-md-12 col-12 mb-1 box-btn-search mt-4">
+                                                    <button type="button"  className="btn btn-primary btn-search  m-1" onClick={submitSearch}><i className="fa-solid fa-magnifying-glass"></i></button>
+                                                    &nbsp;
+                                                    <button type="button"  className="btn btn-danger btn-search  m-1" onClick={handleDeleteSearch}><i className="fa-solid fa-x"></i> Xóa tìm</button> 
+                                                    &nbsp;
+                                                    <button className="btn-primary btn btn-search  m-1" onClick={handleShow}><i className="fa-solid fa-plus"></i> Thêm mới</button>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
+                                    </form>
                                     <div className="table-responsive">
                                         <table className="table">
                                             <thead>
                                                 <tr>
+                                                    <th>#</th>
                                                     <th>Mã sản phẩm</th>
                                                     <th>Tên sản phẩm</th>
                                                     <th>Mô tả</th>

@@ -155,7 +155,7 @@ function Users() {
                 setLoading(false);
             }
             else {
-                Swal.fire('Tìm kiếm', res.data.message, 'wanring')
+                Swal.fire('Tìm kiếm', res.data.message, 'warning')
                 setLoading(false);
             }
         });

@@ -122,9 +122,25 @@ th{
 .box-input input {
     padding: 5px;
     border-radius: 5px;
-    border: none;
+    width: 100%;
+    border-color: #00eafb;
+}
+.box-input input:focus {
+    outline: none;
+    /* box-shadow: 0 0 0 0.25rem rgb(13 110 253 / 25%) !important; */
 }
 .box-input input:focus-visible  {
     /* border: 1px solid #3333 !important; */
     outline: -webkit-focus-ring-color auto 1px;
+}
+.box-input p {
+    margin: 0;
+}
+.box-input .fa-check {
+    font-size: 1.3rem;
+    color: #3fff00;
+}
+
+.box-input .fa-x {
+    color: #ff0000;
 }
