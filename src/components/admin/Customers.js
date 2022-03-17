@@ -17,6 +17,13 @@ function Customers() {
     const [titleForm, setTitleForm] = useState('Thêm mới customer') //Title form
     const [checkedStatus, setCheckedStatus] = useState(false) //Check status user form
     const [isResearch, setIsResearch] = useState(true) // kiểm tra data có phải đã được tìm kiếm hay không
+    // var isResearch = true;
+
+    //edit customer
+    const editRowCustomer = (id) => {
+
+        
+    }
 
     // Customer
     const [customer, setCustomer] = useState({
@@ -54,24 +61,12 @@ function Customers() {
         axios.post(`api/customers/export/`, formData).then(res => {
 
             console.log(res.data)
+            var csvString = res.data;
 
-            var downloadLink = document.createElement("a");
-            var fileData = ['\ufeff'+res.data];
-
-            var blobObject = new Blob(fileData,{
-               type: "text/csv;charset=utf-8;"
-             });
-
-            var url = URL.createObjectURL(blobObject);
-            downloadLink.href = url;
-            downloadLink.download = "customers.csv";
-
-            /*
-             * Actually download CSV
-             */
-            document.body.appendChild(downloadLink);
-            downloadLink.click();
-            document.body.removeChild(downloadLink);
+            var a = window.document.createElement('a');
+            a.setAttribute('href', 'data:text/csv; charset=utf-8,' + encodeURIComponent(csvString));
+            a.setAttribute('download', 'customer.csv');
+            a.click();
         });
     }
 
@@ -101,7 +96,7 @@ function Customers() {
                     axios.post(`api/customers/import/`, formData).then(res => {
                         console.log(res.data)
                         if (res.data.status === 200) {
-
+                            console.log(res.data)
                             Swal.fire(
                                 'Import',
                                 res.data.message,
@@ -168,6 +163,9 @@ function Customers() {
         setInputSearch({})
         console.log(inputSearch)
         document.getElementById("SEARCH-FORM").reset();
+        // isResearch = false
+        setIsResearch(false)
+        
     }
     
     //Tìm kiếm
@@ -199,6 +197,7 @@ function Customers() {
         // loadPage(1, formData);
         // console.log(formData)
         setIsResearch(true)
+        // isResearch = true
         loadPage(1, formData)
        
     }
@@ -207,7 +206,7 @@ function Customers() {
     //call api filter
     const research = (numPage, formData) => {
         setLoading(true);
-        axios.post(`api/customers/search/?page=${numPage}`, formData).then(res => {
+        axios.post(`api/customers/search?page=${numPage}`, formData).then(res => {
             if ( res.data.status === 200) {
                 setCustomers(res.data.customers.data)
                 setPagination({
@@ -394,20 +393,22 @@ function Customers() {
              </td>
          )
      }
-     else{
-         if(customers.length > 0) {
+     else if(customers.length > 0) {
             let numberCustomer = pagination.current_page * 10;
             tableHTML = 
             customers?.map((customer, idx) => {
                 let numUser = idx + 1 + numberCustomer - 10 ;
                 return (
-                <tr key={idx}>
+                <tr key={idx} id={numUser}>
                     <td>{numUser}</td>
-                    <td>{customer.customer_name}</td>
-                    <td>{customer.email}</td>
-                    <td>{customer.tel_num}</td>
-                    <td>{customer.address}</td>
+                    <td><input type="text" className='' value={customer.customer_name} /> </td>
+                    <td><input type="text" className='' value={customer.email} /> </td>
+                    <td><input type="text" className='' value={customer.tel_num} /> </td>
+                    <td><input type="text" className='' value={customer.address} /> </td>
                     <td className="text-center">
+                        <span className='icon_btn' onClick={() => editRowCustomer(customer.customer_id)}>
+                            <i className="fa-solid fa-pencil"></i>
+                        </span>
                         <span className='icon_btn' onClick={() => handleShow(customer.customer_id)}>
                             <i className="fa-solid fa-pencil"></i>
                         </span>
@@ -415,13 +416,12 @@ function Customers() {
                 </tr>
                 );
             })
-        }
-        else {
-            tableHTML = (
-                <tr ><td colSpan={6}>Không có dữ liệu</td> </tr>
-            )
-        }
-     }
+    }
+    else {
+        tableHTML = (
+            <tr ><td colSpan={6}>Không có dữ liệu</td> </tr>
+        )
+    }
 
     return (        
     <div className="sb-nav-fixed">
@@ -564,7 +564,7 @@ function Customers() {
                                                         <th className="text-center">Thao tác</th>
                                                     </tr>
                                                 </thead>
-                                                <tbody>
+                                                <tbody className="box-input">
                                                     { tableHTML }
                                                 </tbody>
                                             </table>

@@ -118,3 +118,13 @@ th{
     position: absolute;
     top: 40%; 
 }
+
+.box-input input {
+    padding: 5px;
+    border-radius: 5px;
+    border: none;
+}
+.box-input input:focus-visible  {
+    /* border: 1px solid #3333 !important; */
+    outline: -webkit-focus-ring-color auto 1px;
+}

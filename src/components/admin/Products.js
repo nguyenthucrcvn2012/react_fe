@@ -110,33 +110,41 @@ function Product() {
             </td>
         )
     }
-    else{
+    else if(products.length > 0) {
+        let numberProduct = pagination.current_page * 10;
         tableHTML = products?.map((pro, idx) => {
-            return (
-                <tr key={idx}>
-                    <td>{pro.product_id}</td>
-                    <td>{pro.product_name}</td>
-                    <td>{pro.description}</td>
-                    <td>{pro.product_price}</td>
-                    {/* <td>{moment(pro.created_at).format('YYYY MM DD')}</td> */}
-                    <td>
-                        {pro.is_sales === 1 ? 
-                            <span className='text-success'>Đang bán</span> :
-                            <span className='text-danger'>Ngừng bán</span>
-                        }
-                    </td>
-                    <td className="text-center">
-                        <span className='icon_btn'>
-                            <i className="fa-solid fa-pencil"></i>
-                        </span>
-                        <span className='icon_btn'>
-                            <i className="fa-solid fa-trash" onClick={(e) => deleteHandler(e, pro.product_id, pro.product_name)} ></i>
-                        </span>
-                    </td>
-                </tr>
-                );
-            })
-    }
+        let numPro = idx + 1 + numberProduct - 10 ;
+        return (
+            <tr key={idx}>
+                <td>{numPro}</td>
+                <td>{pro.product_name}</td>
+                <td>{pro.description}</td>
+                <td>{pro.product_price}</td>
+                {/* <td>{moment(pro.created_at).format('YYYY MM DD')}</td> */}
+                <td>
+                    {pro.is_sales === 1 ? 
+                        <span className='text-success'>Đang bán</span> :
+                        <span className='text-danger'>Ngừng bán</span>
+                    }
+                </td>
+                <td className="text-center">
+                    <span className='icon_btn'>
+                        <i className="fa-solid fa-pencil"></i>
+                    </span>
+                    <span className='icon_btn'>
+                        <i className="fa-solid fa-trash" onClick={(e) => deleteHandler(e, pro.product_id, pro.product_name)} ></i>
+                    </span>
+                </td>
+            </tr>
+            );
+        })
+        }
+        else {
+            tableHTML = (
+                <tr ><td colSpan={6}>Không có dữ liệu</td> </tr>
+            )
+        }
+
 
     //Lưu mới sản phẩm
     const submitStoreProduct = (e) =>{
@@ -346,29 +354,28 @@ function Product() {
                                         <div className="row p-3">
                                             <div className="col-md-3 mb-1">
                                                 <label htmlFor="name">Tên sản phẩm</label>
-                                                <input type="text" id="name"  className="form-control" placeholder='Nhập tên sản phẩm'/>   
+                                                <input type="text" name="name"  className="form-control" value={inputSearch.name} onChange={handleInputSearch} placeholder='Nhập tên sản phẩm'/>   
                                             </div>
                                             <div className="col-md-3  mb-1">
                                                 <label htmlFor="status">Trạng thái</label>
-                                                <select className="form-select" id="status" aria-label="Default select example">
-                                                <option value="DEFAULT" disabled>Chọn trạng thái</option>
-                                                <option value="1">Tất cả</option>
-                                                <option value="2">Two</option>
-                                                <option value="3">Three</option>
+                                                <select className="form-select" name="is_sales" onChange={handleInputSearch} value={inputSearch.is_sales} aria-label="Default select example">
+                                                <option value="" disabled>Chọn trạng thái</option>
+                                                <option value="1">Đang bán</option>
+                                                <option value="0">Ngừng bán</option>
                                                 </select>
                                             </div>
                                             <div className="col-md-3 col-6 mb-1">
                                                 <label htmlFor="price_from">Giá bán từ</label>
-                                                <input type="number"  className="form-control" id='price_from'/>   
+                                                <input type="number" onChange={handleInputSearch} value={inputSearch.price_from}  className="form-control" name='price_from'/>   
                                             </div>
                                             <div className="col-md-3 col-6 mb-1">
                                                 <label htmlFor="price_to">Giá bán đến</label>
-                                                <input type="number"  className="form-control" id='price_to'/>   
+                                                <input type="number" onChange={handleInputSearch} value={inputSearch.price_to}  className="form-control" name='price_to'/>   
                                             </div>
                                             <div className="col-md-12 col-12 mb-1 box-btn-search mt-4">
                                                 <button type="button"  className="btn btn-primary btn-search  m-1" ><i className="fa-solid fa-magnifying-glass"></i></button>
                                                 &nbsp;
-                                                <button type="button"  className="btn btn-danger btn-search  m-1" onClick={handleDeleteSearch}><i class="fa-solid fa-x"></i> Xóa tìm</button> 
+                                                <button type="button"  className="btn btn-danger btn-search  m-1" onClick={handleDeleteSearch}><i className="fa-solid fa-x"></i> Xóa tìm</button> 
                                                 &nbsp;
                                                 <button className="btn-primary btn btn-search  m-1" onClick={handleShow}><i className="fa-solid fa-plus"></i> Thêm mới</button>
                                             </div>

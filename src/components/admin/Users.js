@@ -21,12 +21,14 @@ function Users() {
     const [checkedStatus, setCheckedStatus] = useState(false) //Check status user form
     const [titleForm, setTitleForm] = useState('Thêm mới user') //Tiêu đề form
     const [isResearch, setIsResearch] = useState(true) // check xem có đang tìm kiếm k
+    // var isResearch = false;
     const [inputSearch, setInputSearch] = useState({
         name:  '',
         email:  '',
         group_role: '',
         is_active:  '',
     }) //Form search
+
     const [user, setUser] = useState({
         id: '',
         name:  '',
@@ -82,6 +84,7 @@ function Users() {
         // loadPage(1, formData);
         // console.log(formData)
         setIsResearch(true)
+        // isResearch = true
         loadPage(1, formData)
        
     }
@@ -139,7 +142,7 @@ function Users() {
 
     const research = (numPage, formData) => {
         setLoading(true);
-        axios.post(`api/users/search/?page=${numPage}`, formData).then(res => {
+        axios.post(`api/users/search?page=${numPage}`, formData).then(res => {
             if (res.data.status === 200) {
                 setUsers(res.data.users.data)
                 setPagination({
@@ -163,7 +166,7 @@ function Users() {
 
         if(!isResearch) {
             setLoading(true);
-            axios.get(`/api/users/?page=${numPage}`).then(res => {
+            axios.get(`/api/users?page=${numPage}`).then(res => {
                 if (res.data.status === 200) {
                     setUsers(res.data.users.data)
                     setPagination({
@@ -330,6 +333,7 @@ function Users() {
         document.getElementById("SEARCH-FORM").reset();
         console.log(inputSearch)
         setIsResearch(false)
+        // isResearch = false
     }
     
     // RESET DATA
@@ -421,7 +425,7 @@ function Users() {
     //     return (
     //         <>
     //             <button type="button"  className="btn btn-danger btn-search  m-1" onClick={handleDeleteSearch}>
-    //                 <i class="fa-solid fa-x"></i> Xóa tìm
+    //                 <i className="fa-solid fa-x"></i> Xóa tìm
     //             </button>
     //             &nbsp;
     //         </>
@@ -429,28 +433,28 @@ function Users() {
     // }
 
     //component password, password_confirm
-    const RenderPassword = () => {
-        return (
-            <>
-                <tr>
-                    <th scope="row">Mật khẩu</th>
-                    <th scope="col">
-                        <input type="password" name="password" onChange={handleInput} value={user.password} 
-                        className="form-control" placeholder="Nhập mật khẩu" />
-                        <span className="text-alert">{user.error_list.password}</span>
-                    </th>
-                </tr>
-                <tr>
-                    <th scope="row">Mật khẩu xác nhận</th>
-                    <th scope="col">
-                        <input type="password" name="password_confirm" value={user.password_confirm} 
-                        onChange={handleInput} className="form-control" placeholder="Xác nhận nhận mật khẩu" />
-                        <span className="text-alert">{user.error_list.password_confirm}</span>
-                    </th>
-                </tr>
-            </>
-        )
-    }
+    // const RenderPassword = () => {
+    //     return (
+    //         <>
+    //             <tr>
+    //                 <td scope="row">Mật khẩu</td>
+    //                 <td scope="col">
+    //                     <input type="password" name="password" onChange={handleInput} value={user.password} 
+    //                     className="form-control" placeholder="Nhập mật khẩu" />
+    //                     <span className="text-alert">{user.error_list.password}</span>
+    //                 </td>
+    //             </tr>
+    //             <tr>
+    //                 <td scope="row">Mật khẩu xác nhận</td>
+    //                 <td scope="col">
+    //                     <input type="password" name="password_confirm" value={user.password_confirm} 
+    //                     onChange={handleInput} className="form-control" placeholder="Xác nhận nhận mật khẩu" />
+    //                     <span className="text-alert">{user.error_list.password_confirm}</span>
+    //                 </td>
+    //             </tr>
+    //         </>
+    //     )
+    // }
 
     //Đóng mở modal
     const [show, setShow] = useState(false);
@@ -503,27 +507,45 @@ function Users() {
 
                         <form id="USER_FORM">
                             <table className="w-100">
+                                <thead></thead>
+                            <tbody>
                                 <tr>
-                                    <th scope="col">Tên</th>
-                                    <th scope="col">
+                                    <td scope="row">Tên</td>
+                                    <td scope="col">
                                         <input type="text" name="name" className="form-control" value={user.name} 
                                         onChange={handleInput} placeholder="Nhập họ tên" />
                                         <span className="text-alert">{user.error_list.name}</span>
-                                    </th>
+                                    </td>
                                 </tr>
                                 <tr>
-                                    <th scope="row">Email</th>
-                                    <th scope="col">
+                                    <td scope="row">Email</td>
+                                    <td scope="col">
                                         <input type="email" name="email" onChange={handleInput} value={user.email} 
                                         className="form-control" placeholder="Nhập email" />
                                         <span className="text-alert">{user.error_list.email}</span>
-                                    </th>
+                                    </td>
                                 </tr>
-                                {user.id === '' ? <RenderPassword /> : ''}
+                                {/* {user.id === '' ? <RenderPassword /> : ''} */}
                                 <tr>
-                                    <th scope="row">Nhóm</th>
-                                    <th scope="col">
-                                        <select className="form-select" name="group_role" onChange={handleInput}
+                                    <td scope="row">Mật khẩu</td>
+                                    <td scope="col">
+                                        <input type="password" disabled={user.id == '' ? '' : 'disabled'}   name="password" onChange={handleInput} value={user.password} 
+                                        className="form-control" placeholder="Nhập mật khẩu" />
+                                        <span className="text-alert">{user.error_list.password}</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td scope="row">Mật khẩu xác nhận</td>
+                                    <td scope="col">
+                                        <input type="password" disabled={user.id == '' ? '' : 'disabled'} name="password_confirm" value={user.password_confirm} 
+                                        onChange={handleInput} className="form-control" placeholder="Xác nhận nhận mật khẩu" />
+                                        <span className="text-alert">{user.error_list.password_confirm}</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td scope="row">Nhóm</td>
+                                    <td scope="col">
+                                        <select className="form-select"  name="group_role" onChange={handleInput}
                                          aria-label="Default select example">
                                             <option value="" >Chọn nhóm</option>
                                             <option value="Admin"  selected={user.group_role == 'Admin' ? 'selected' : ''}>Admin</option>
@@ -531,15 +553,16 @@ function Users() {
                                             <option value="Quản lí" selected={user.group_role == 'Quản lí' ? 'selected' : ''}>Quản lí</option>
                                         </select>
                                         <span className="text-alert">{user.error_list.group_role}</span>
-                                    </th>
+                                    </td>
                                 </tr>
                                 <tr>
-                                    <th scope="row">Trạng thái</th>
-                                    <th scope="col">
+                                    <td scope="row">Trạng thái</td>
+                                    <td scope="col">
                                         <input className="form-check-input" type="checkbox" checked={checkedStatus} 
-                                        name="is_active" onClick={handleClickStatus} />
-                                    </th>
+                                        name="is_active" onChange={handleClickStatus} />
+                                    </td>
                                 </tr>
+                                </tbody>
                             </table>
                             <Modal.Footer>
                                 <Button variant="secondary" onClick={handleClose}>
@@ -614,7 +637,7 @@ function Users() {
                                                 &nbsp;
                                                 {/* {isResearch ? <BtnClearSearch /> : ''} */}
                                                 <button type="button"  className="btn btn-danger btn-search  m-1" onClick={handleDeleteSearch}>
-                                                    <i class="fa-solid fa-x"></i> Xóa tìm
+                                                    <i className="fa-solid fa-x"></i> Xóa tìm
                                                 </button>
                                                 {/* &nbsp;
                                                 <button className="btn btn-primary btn-search  m-1" onClick={() => handleShow()}>
