@@ -376,7 +376,7 @@ function Users() {
                 resetInput()
                 setShow(false)
             }
-            else if(res.data.status === 401){
+            else if(res.data.status === 500){
 
                 Swal.fire('Thêm mới', res.data.message, 'success')
             }
@@ -421,41 +421,6 @@ function Users() {
 
     }
     
-    // const BtnClearSearch = () => {
-    //     return (
-    //         <>
-    //             <button type="button"  className="btn btn-danger btn-search  m-1" onClick={handleDeleteSearch}>
-    //                 <i className="fa-solid fa-x"></i> Xóa tìm
-    //             </button>
-    //             &nbsp;
-    //         </>
-    //     )
-    // }
-
-    //component password, password_confirm
-    // const RenderPassword = () => {
-    //     return (
-    //         <>
-    //             <tr>
-    //                 <td scope="row">Mật khẩu</td>
-    //                 <td scope="col">
-    //                     <input type="password" name="password" onChange={handleInput} value={user.password} 
-    //                     className="form-control" placeholder="Nhập mật khẩu" />
-    //                     <span className="text-alert">{user.error_list.password}</span>
-    //                 </td>
-    //             </tr>
-    //             <tr>
-    //                 <td scope="row">Mật khẩu xác nhận</td>
-    //                 <td scope="col">
-    //                     <input type="password" name="password_confirm" value={user.password_confirm} 
-    //                     onChange={handleInput} className="form-control" placeholder="Xác nhận nhận mật khẩu" />
-    //                     <span className="text-alert">{user.error_list.password_confirm}</span>
-    //                 </td>
-    //             </tr>
-    //         </>
-    //     )
-    // }
-
     //Đóng mở modal
     const [show, setShow] = useState(false);
     const handleClose = () => {
@@ -467,7 +432,7 @@ function Users() {
     const handleShow = (id) => {
         // resetInput()
         if(Number.isInteger(id)) {
-            axios.get(`/api/users/${id}`).then(res => {
+            axios.get(`/api/users/${id}/edit`).then(res => {
                 console.log(res.data)
                 if(res.data.status === 200){
                     setTitleForm('Chỉnh sửa user')

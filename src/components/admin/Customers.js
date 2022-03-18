@@ -176,7 +176,12 @@ function Customers() {
     //Xóa tìm kiếm
     const handleDeleteSearch = () => {
         loadPage(1)
-        setInputSearch({})
+        setInputSearch({
+            customer_name:  '',
+            email:  '',
+            is_active: '',
+            address:  '',
+        })
         console.log(inputSearch)
         document.getElementById("SEARCH-FORM").reset();
         // isResearch = false
@@ -189,11 +194,13 @@ function Customers() {
         if (e.key === 'Enter') {
             e.preventDefault()
             filterData()
+            console.log(inputSearch)
           }
     }    
     const submitSearch = (e) => {
         e.preventDefault()
         filterData()
+        console.log(inputSearch)
     }
 
     const filterData = () => {
@@ -234,6 +241,7 @@ function Customers() {
                 setLoading(false);
             }
             else {
+                Swal.fire('Tìm kiếm', res.data.message, 'warning')
                 setLoading(false);
             }
         });
@@ -263,6 +271,7 @@ function Customers() {
             }); 
         }
         else{
+
             research(numPage, formData)
         }
     }
@@ -381,6 +390,7 @@ function Customers() {
             tel_num: customer.tel_num,
             is_active: checkedStatus,
         }
+        
         const formData = new FormData();
         formData.append('customer_name', inputSearch.customer_name);
         formData.append('email', inputSearch.email);
@@ -395,7 +405,7 @@ function Customers() {
                 setShow(false)
                 setIsEdit(null)
             }
-            else if(res.data.status === 401){
+            else if(res.data.status === 401 || res.data.status === 500){
                 Swal.fire('Cập nhật', res.data.message, 'success')
                 loadPage(numPage, formData)
             }
