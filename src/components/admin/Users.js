@@ -42,12 +42,6 @@ function Users() {
     //input search
     const handleInputSearch = (e) => {
         setInputSearch({ ...inputSearch, [e.target.name]: e.target.value })
-        
-        var formData = new FormData();
-        formData.append('name', inputSearch.name);
-        formData.append('email', inputSearch.email);
-        formData.append('is_active', inputSearch.is_active);
-        formData.append('group_role', inputSearch.group_role);
     }
 
     //status rong form sửa /thêm user
@@ -62,43 +56,22 @@ function Users() {
         if (e.key === 'Enter') {
             e.preventDefault()
             filterData()
-          }
+        }
     }
 
 
     //Filter
     const filterData = () => {
-        numPage = 1;
-        // const formData = new FormData();
-        // formData.append('name', inputSearch.name);
-        // formData.append('email', inputSearch.email);
-        // formData.append('is_active', inputSearch.is_active);
-        // formData.append('group_role', inputSearch.group_role);
 
-        const formData = {
-            name: inputSearch.name,
-            email: inputSearch.email,
-            is_active: inputSearch.is_active,
-            group_role: inputSearch.group_role,
-        }
-        // loadPage(1, formData);
-        // console.log(formData)
         setIsResearch(true)
-        // isResearch = true
-        loadPage(1, formData)
-       
+        loadPage(1)
     }
 
     //Phân trang 
     var numPage; // Số trang hiện tại
     const callBackChildren = (num) => {
         numPage = num
-        const formData = new FormData();
-        formData.append('name', inputSearch.name);
-        formData.append('email', inputSearch.email);
-        formData.append('is_active', inputSearch.is_active);
-        formData.append('group_role', inputSearch.group_role);
-        loadPage(numPage, formData)
+        loadPage(numPage)
     }
    
     //input form user
@@ -121,15 +94,10 @@ function Users() {
         }).then((result) => {
             if (result.isConfirmed) {
 
-                axios.delete(`api/users/${id}`).then(res => {
+                axios.post(`api/users/${id}/delete`).then(res => {
                     if (res.data.status === 200) {
                         Swal.fire('Xóa!', res.data.message, 'success')
-                        const formData = new FormData();
-                        formData.append('name', inputSearch.name);
-                        formData.append('email', inputSearch.email);
-                        formData.append('is_active', inputSearch.is_active);
-                        formData.append('group_role', inputSearch.group_role);
-                        loadPage(numPage, formData)
+                        loadPage(numPage)
                     }
                     else if (res.data.status === 404) {
                         Swal.fire('Xóa!', res.data.message, 'error')
@@ -140,7 +108,15 @@ function Users() {
         })
     }
 
-    const research = (numPage, formData) => {
+    //Tìm kiếm
+    const research = (numPage) => {
+
+        const formData = new FormData();
+        formData.append('name', inputSearch.name);
+        formData.append('email', inputSearch.email);
+        formData.append('is_active', inputSearch.is_active);
+        formData.append('group_role', inputSearch.group_role);
+
         setLoading(true);
         axios.post(`api/users/search?page=${numPage}`, formData).then(res => {
             if (res.data.status === 200) {
@@ -185,15 +161,14 @@ function Users() {
         }
         else{
 
-            research(numPage, formData)
+            research(numPage)
         }
     }
 
     //Call api sau khi load trang
     useEffect(() => {
 
-        const formData = new FormData();
-        loadPage(numPage, formData)
+        loadPage(numPage)
 
     }, []);
 
@@ -212,15 +187,10 @@ function Users() {
         }).then((result) => {
             if (result.isConfirmed) {
 
-                axios.put(`api/users/active/${id}`).then(res => {
+                axios.post(`api/users/${id}/active`).then(res => {
                     if (res.data.status === 200) {
                         Swal.fire('Khóa!', res.data.message, 'success')
-                        const formData = new FormData();
-                        formData.append('name', inputSearch.name);
-                        formData.append('email', inputSearch.email);
-                        formData.append('is_active', inputSearch.is_active);
-                        formData.append('group_role', inputSearch.group_role);
-                        loadPage(numPage, formData)
+                        loadPage(numPage)
                     }
                     else if (res.data.status === 404) {
                         Swal.fire('Khóa!', res.data.message, 'error')
@@ -246,15 +216,10 @@ function Users() {
         }).then((result) => {
             if (result.isConfirmed) {
 
-                axios.put(`api/users/active/${id}`).then(res => {
+                axios.post(`api/users/${id}/active`).then(res => {
                     if (res.data.status === 200) {
                         Swal.fire('Mở Khóa!', res.data.message, 'success')
-                        const formData = new FormData();
-                        formData.append('name', inputSearch.name);
-                        formData.append('email', inputSearch.email);
-                        formData.append('is_active', inputSearch.is_active);
-                        formData.append('group_role', inputSearch.group_role);
-                        loadPage(numPage, formData)
+                        loadPage(numPage)
                     }
                     else if (res.data.status === 404) {
                         Swal.fire('Mở Khóa!', res.data.message, 'error')
@@ -329,11 +294,10 @@ function Users() {
             group_role: '',
             is_active:  '',
         })
-        loadPage(1)
         document.getElementById("SEARCH-FORM").reset();
         console.log(inputSearch)
         setIsResearch(false)
-        // isResearch = false
+        loadPage(1)
     }
     
     // RESET DATA
@@ -363,17 +327,10 @@ function Users() {
             is_active: checkedStatus,
         }
 
-        axios.post(`/api/users`, data).then(res => {
+        axios.post(`/api/users/store`, data).then(res => {
             if(res.data.status === 200){
-
+                handleDeleteSearch()
                 Swal.fire('Thêm mới', res.data.user, 'success')
-                const formData = new FormData();
-                formData.append('name', inputSearch.name);
-                formData.append('email', inputSearch.email);
-                formData.append('is_active', inputSearch.is_active);
-                formData.append('group_role', inputSearch.group_role);
-                loadPage(numPage, formData)
-                resetInput()
                 setShow(false)
             }
             else if(res.data.status === 500){
@@ -398,18 +355,13 @@ function Users() {
             group_role: user.group_role,
             is_active: checkedStatus,
         }
-
-        axios.put(`/api/users/${user.id}`, data).then(res => {
+        
+        axios.post(`/api/users/${user.id}/update`, data).then(res => {
             if(res.data.status === 200){
                 Swal.fire('Cập nhật', res.data.message, 'success')
-                const formData = new FormData();
-                formData.append('name', inputSearch.name);
-                formData.append('email', inputSearch.email);
-                formData.append('is_active', inputSearch.is_active);
-                formData.append('group_role', inputSearch.group_role);
-                loadPage(numPage, formData)
                 resetInput()
                 setShow(false)
+                loadPage(numPage)
             }
             else if(res.data.status === 401){
                 Swal.fire('Cập nhật', res.data.message, 'success')
@@ -432,7 +384,7 @@ function Users() {
     const handleShow = (id) => {
         // resetInput()
         if(Number.isInteger(id)) {
-            axios.get(`/api/users/${id}/edit`).then(res => {
+            axios.get(`/api/users/${id}`).then(res => {
                 console.log(res.data)
                 if(res.data.status === 200){
                     setTitleForm('Chỉnh sửa user')

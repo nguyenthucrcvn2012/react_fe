@@ -17,13 +17,18 @@ function Customers() {
     const [titleForm, setTitleForm] = useState('Thêm mới customer') //Title form
     const [checkedStatus, setCheckedStatus] = useState(false) //Check status user form
     const [isResearch, setIsResearch] = useState(true) // kiểm tra data có phải đã được tìm kiếm hay không
-
     const [isEdit, setIsEdit] = useState(null);
+    const [customer, setCustomer] = useState({  // Customer
+        customer_id: '',
+        customer_name: '',
+        email:  '',
+        address:  '',
+        tel_num:  '',
+        error_list: []
+    });
 
-    // var isResearch = true;
-
-        //edit customer
-    const editRowCustomer = (id, name, tel, address, email) => {
+    //Chỉnh sửa trên table
+    const editRowCustomer = (id, name, tel, address, email, is_active) => {
         setCustomer({
             customer_name:  name,
             email:  email,
@@ -32,6 +37,7 @@ function Customers() {
             customer_id:  id,
             error_list: []
         })
+        setCheckedStatus(is_active)
         setIsEdit(id)
     }
 
@@ -39,17 +45,6 @@ function Customers() {
         setCustomer({ ...customer, [e.target.name] : e.target.value })
         console.log(customer)
     }
-    
-
-    // Customer
-    const [customer, setCustomer] = useState({
-        customer_id: '',
-        customer_name: '',
-        email:  '',
-        address:  '',
-        tel_num:  '',
-        error_list: []
-    }); //form
 
     const [inputSearch, setInputSearch] = useState({
         customer_name:  '',
@@ -175,7 +170,6 @@ function Customers() {
 
     //Xóa tìm kiếm
     const handleDeleteSearch = () => {
-        loadPage(1)
         setInputSearch({
             customer_name:  '',
             email:  '',
@@ -184,8 +178,8 @@ function Customers() {
         })
         console.log(inputSearch)
         document.getElementById("SEARCH-FORM").reset();
-        // isResearch = false
         setIsResearch(false)
+        loadPage(1)
         
     }
     
@@ -204,29 +198,20 @@ function Customers() {
     }
 
     const filterData = () => {
-        numPage = 1;
+
+        setIsResearch(true)
+        loadPage(1)
+       
+    }
+
+    //Tìm kiếm
+    const research = (numPage) => {
         const formData = new FormData();
         formData.append('customer_name', inputSearch.customer_name);
         formData.append('email', inputSearch.email);
         formData.append('address', inputSearch.address);
         formData.append('is_active', inputSearch.is_active);
 
-        // const formData = {
-        //     name: inputSearch.name,
-        //     email: inputSearch.email,
-        //     is_active: inputSearch.is_active,
-        //     group_role: inputSearch.group_role,
-        // }
-        // loadPage(1, formData);
-        // console.log(formData)
-        setIsResearch(true)
-        // isResearch = true
-        loadPage(1, formData)
-       
-    }
-
-    //call api filter
-    const research = (numPage, formData) => {
         setLoading(true);
         axios.post(`api/customers/search?page=${numPage}`, formData).then(res => {
             if ( res.data.status === 200) {
@@ -248,7 +233,7 @@ function Customers() {
     }
 
     //Call api lấy dsach
-    const loadPage = (numPage, formData) => {
+    const loadPage = (numPage) => {
 
         if(!isResearch) {
             setLoading(true);
@@ -272,15 +257,13 @@ function Customers() {
         }
         else{
 
-            research(numPage, formData)
+            research(numPage)
         }
     }
 
     //Load data sau khi load trang
     useEffect(() =>{
-        const formData = new FormData();
-        loadPage(numPage, formData);
-
+        loadPage(numPage);
     }, []);
 
     //set state input
@@ -315,10 +298,10 @@ function Customers() {
         setShow(false)
         setIsEdit(null)
     };
-
+    // Mở modal
     const handleShow = (id) => {
          // resetInput()
-         if(Number.isInteger(id)) {
+         if(id) {
 
             axios.get(`/api/customers/${id}`).then(res => {
                 console.log(res.data)
@@ -348,7 +331,6 @@ function Customers() {
         }
     };
 
-
     //Thêm mới customer
     const submitCustomer = (e) => {
 
@@ -364,9 +346,9 @@ function Customers() {
         axios.post(`/api/customers`, data).then(res => {
             if(res.data.status === 200){
                 Swal.fire('Thêm mới', res.data.message, 'success')
-                loadPage(numPage)
                 resetInput()
                 setShow(false)
+                loadPage(numPage)
             }
             else if(res.data.status === 401){
                 Swal.fire('Thêm mới', res.data.message, 'success')
@@ -390,24 +372,17 @@ function Customers() {
             tel_num: customer.tel_num,
             is_active: checkedStatus,
         }
-        
-        const formData = new FormData();
-        formData.append('customer_name', inputSearch.customer_name);
-        formData.append('email', inputSearch.email);
-        formData.append('address', inputSearch.address);
-        formData.append('is_active', inputSearch.is_active);
 
-        axios.put(`/api/customers/${customer.customer_id}`, data).then(res => {
+        axios.post(`/api/customers/${customer.customer_id}/update`, data).then(res => {
             if(res.data.status === 200){
                 Swal.fire('Cập nhật', res.data.message, 'success')
-                loadPage(numPage, formData)
                 resetInput()
                 setShow(false)
                 setIsEdit(null)
+                loadPage(numPage)
             }
             else if(res.data.status === 401 || res.data.status === 500){
-                Swal.fire('Cập nhật', res.data.message, 'success')
-                loadPage(numPage, formData)
+                Swal.fire('Cập nhật', res.data.message, 'error')
             }
             else{
                 setCustomer({...customer, error_list: res.data.validation_errors})
@@ -463,7 +438,7 @@ function Customers() {
                             </span>
                         </>
                          : 
-                        <span className='icon_btn' onClick={() => editRowCustomer(cus.customer_id, cus.customer_name, cus.tel_num, cus.address, cus.email)}>
+                        <span className='icon_btn' onClick={() => editRowCustomer(cus.customer_id, cus.customer_name, cus.tel_num, cus.address, cus.email, cus.is_active)}>
                             <i className="fa-solid fa-pencil"></i>
                         </span>
                         }

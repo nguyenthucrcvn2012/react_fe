@@ -20,9 +20,15 @@ const Navigation = (props) => {
 
     //Render nút nhảy trang
     const renderPageNumbers = pageNumbers.map(number => {
+
+        let classPaginate = 'page-item '
+        if (number === pageState.current_page) {
+            classPaginate += ' active';
+          }
+        //   onClick={() => handleNav(number)}
         return (
-            <li className="page-item " key={number}  id={number}>
-                <button className="page-link "  onClick={() => handleNav(number)} > {number}</button>
+            <li className={classPaginate} key={number}  id={number}>
+                <button className="page-link" onClick={() => handleNav(number)} > {number}</button>
             </li>
         );
     });
