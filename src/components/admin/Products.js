@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { Modal, Button } from "react-bootstrap";
+import { Modal, Button, Tooltip } from "react-bootstrap";
 
 import Footer from "./../../layouts/admin/Footer";
 import Navbar from "./../../layouts/admin/Navbar";
@@ -26,7 +26,6 @@ function Product() {
     }) //Form search
 
     const [product, setProduct] = useState({
-
         product_id: '',
         product_name: '',
         product_image: '',
@@ -34,7 +33,6 @@ function Product() {
         description: '',
         is_sales: '',
         error_list: []
-
     });
 
 
@@ -65,7 +63,7 @@ function Product() {
             price_from: ''
         })
         document.getElementById("SEARCH-FORM").reset();
-        loadPage(1)
+        reloadPage(numPage)
     }
 
     const filterData = () => {
@@ -104,8 +102,6 @@ function Product() {
         setProductImage()
     }
 
-
-
     //Đóng modal
     const [show, setShow] = useState(false);
     const handleClose = () => {
@@ -125,7 +121,7 @@ function Product() {
                         product_name: res.data.product.product_name,
                         product_image: '',
                         product_price: res.data.product.product_price,
-                        description: res.data.product.description,
+                        description: res.data.product.description === null ? '' : res.data.product.description,
                         is_sales: res.data.product.is_sales,
                         error_list: []
                     })
@@ -182,8 +178,11 @@ function Product() {
             return (
                 <tr key={idx}>
                     <td>{numPro}</td>
-                    <td>{pro.product_id}</td>
-                    <td>{pro.product_name}</td>
+                    <td >{pro.product_id}</td>
+                    <td className='td-product-name'>
+                        {pro.product_name}
+                        <img className='display-image-product' src={pro.product_image} alt="" />
+                    </td>
                     <td>{pro.description}</td>
                     <td>{pro.product_price}</td>
                     {/* <td>{moment(pro.created_at).format('YYYY MM DD')}</td> */}
@@ -297,25 +296,8 @@ function Product() {
     const loadPage = (numPage) => {
 
         if (!isResearch) {
-            setLoading(true);
-            axios.get(`/api/products?page=${numPage}`).then(res => {
-                if (res.data.status === 200) {
-                    console.log(res.data)
-                    setProducts(res.data.products.data)
-                    setPagination({
-                        current_page: res.data.products.current_page,
-                        last_page: res.data.products.last_page,
-                        to: res.data.products.to,
-                        total: res.data.products.total,
-                        from: res.data.products.from
-                    })
-                    setLoading(false);
-                }
-                else {
-                    Swal.fire('Tìm kiếm', res.data.message, 'warning')
-                    setLoading(false);
-                }
-            });
+
+            reloadPage(numPage)
         }
         else {
             
@@ -323,13 +305,37 @@ function Product() {
         }
     }
 
+    const reloadPage = (numPage) => {
+        setLoading(true);
+        axios.get(`/api/products?page=${numPage}`).then(res => {
+            if (res.data.status === 200) {
+                console.log(res.data)
+                setProducts(res.data.products.data)
+                setPagination({
+                    current_page: res.data.products.current_page,
+                    last_page: res.data.products.last_page,
+                    to: res.data.products.to,
+                    total: res.data.products.total,
+                    from: res.data.products.from
+                })
+                setLoading(false);
+            }
+            else {
+                Swal.fire('Tìm kiếm', res.data.message, 'warning')
+                setLoading(false);
+            }
+        });
+    }
+
     //call api filter
     const research = (numPage) => {
+
         const formData = new FormData();
         formData.append('product_name', inputSearch.product_name);
         formData.append('is_sales', inputSearch.is_sales);
         formData.append('price_to', inputSearch.price_to);
         formData.append('price_from', inputSearch.price_from);
+
         setLoading(true);
         axios.post(`api/products/search?page=${numPage}`, formData).then(res => {
             if (res.data.status === 200) {
@@ -402,7 +408,7 @@ function Product() {
                             <div className="col-md-7">
                                 <table className="w-100">
                                     <tr>
-                                        <th scope="col">Tên sản phẩm</th>
+                                        <th scope="col">Tên sản phẩm <span className='text-danger'>*</span></th>
                                         <th scope="col">
                                             <input type="text" name="product_name" value={product.product_name} onChange={handleInput}
                                                 className="form-control" placeholder="Nhập tên sản phẩm" />
@@ -410,7 +416,7 @@ function Product() {
                                         </th>
                                     </tr>
                                     <tr>
-                                        <th scope="row">Giá bán</th>
+                                        <th scope="row">Giá bán <span className='text-danger'>*</span></th>
                                         <th scope="col">
                                             <input type="number" name="product_price" value={product.product_price} onChange={handleInput}
                                                 className="form-control" min="0" placeholder="Nhập giá bán" />
@@ -426,7 +432,7 @@ function Product() {
                                         </th>
                                     </tr>
                                     <tr>
-                                        <th scope="row">Trạng thái</th>
+                                        <th scope="row">Trạng thái <span className='text-danger'>*</span></th>
                                         <th scope="col">
                                             <select className="form-select" onChange={handleInput} name="is_sales"
                                                 aria-label="Default select example">

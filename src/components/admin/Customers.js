@@ -60,7 +60,7 @@ function Customers() {
     }
 
     //export CSV 
-    const exportCsv = (e) => {
+    const exportCsv = () => {
 
         const formData = new FormData();
         formData.append('customer_name', inputSearch.customer_name);
@@ -170,17 +170,15 @@ function Customers() {
 
     //Xóa tìm kiếm
     const handleDeleteSearch = () => {
+        setIsResearch(false)
         setInputSearch({
             customer_name:  '',
             email:  '',
             is_active: '',
             address:  '',
         })
-        console.log(inputSearch)
         document.getElementById("SEARCH-FORM").reset();
-        setIsResearch(false)
-        loadPage(1)
-        
+        reloadPage(numPage)
     }
     
     //Tìm kiếm
@@ -206,6 +204,7 @@ function Customers() {
 
     //Tìm kiếm
     const research = (numPage) => {
+
         const formData = new FormData();
         formData.append('customer_name', inputSearch.customer_name);
         formData.append('email', inputSearch.email);
@@ -235,30 +234,36 @@ function Customers() {
     //Call api lấy dsach
     const loadPage = (numPage) => {
 
-        if(!isResearch) {
-            setLoading(true);
-            axios.get(`/api/customers?page=${numPage}`).then(res => {
-                if(res.data.status === 200){
-                    setCustomers(res.data.customers.data)
-                    setPagination({
-                        current_page: res.data.customers.current_page,
-                        last_page: res.data.customers.last_page,
-                        to: res.data.customers.to,
-                        total: res.data.customers.total,
-                        from: res.data.customers.from
-                    })
-                    setLoading(false);
-                }
-                else{
-                    Swal.fire('Tìm kiếm', res.data.message, 'warning')
-                    setLoading(false);
-                }
-            }); 
+        if (!isResearch) {
+            reloadPage(numPage)
         }
         else{
 
             research(numPage)
         }
+    }
+
+    //Reload 
+    const reloadPage = (numPage) => {
+        setLoading(true);
+        axios.get(`/api/customers?page=${numPage}`).then(res => {
+            if(res.data.status === 200){
+                console.log(res.data)
+                setCustomers(res.data.customers.data)
+                setPagination({
+                    current_page: res.data.customers.current_page,
+                    last_page: res.data.customers.last_page,
+                    to: res.data.customers.to,
+                    total: res.data.customers.total,
+                    from: res.data.customers.from
+                })
+                setLoading(false);
+            }
+            else{
+                Swal.fire('Tìm kiếm', res.data.message, 'warning')
+                setLoading(false);
+            }
+        }); 
     }
 
     //Load data sau khi load trang

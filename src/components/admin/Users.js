@@ -58,11 +58,21 @@ function Users() {
             filterData()
         }
     }
-
+    //Xóa tìm kiếm
+    const handleDeleteSearch = () => {
+        setIsResearch(false)
+        setInputSearch({
+            name:  '',
+            email:  '',
+            group_role: '',
+            is_active:  '',
+        })
+        document.getElementById("SEARCH-FORM").reset();
+        reloadPage(numPage)
+    }
 
     //Filter
     const filterData = () => {
-
         setIsResearch(true)
         loadPage(1)
     }
@@ -137,30 +147,33 @@ function Users() {
         });
     }
 
+    const reloadPage = (numPage) => {
+        setLoading(true);
+        axios.get(`/api/users?page=${numPage}`).then(res => {
+            if (res.data.status === 200) {
+                setUsers(res.data.users.data)
+                setPagination({
+                    current_page: res.data.users.current_page,
+                    last_page: res.data.users.last_page,
+                    to: res.data.users.to,
+                    total: res.data.users.total,
+                    from: res.data.users.from
+                })
+                setLoading(false);
+            }
+            else {
+                setLoading(true);
+            }
+        });
+    }
     // Lấy dữ liệu
-    const loadPage = (numPage, formData) => {
+    const loadPage = (numPage) => {
+
 
         if(!isResearch) {
-            setLoading(true);
-            axios.get(`/api/users?page=${numPage}`).then(res => {
-                if (res.data.status === 200) {
-                    setUsers(res.data.users.data)
-                    setPagination({
-                        current_page: res.data.users.current_page,
-                        last_page: res.data.users.last_page,
-                        to: res.data.users.to,
-                        total: res.data.users.total,
-                        from: res.data.users.from
-                    })
-                    setLoading(false);
-                }
-                else {
-                    setLoading(true);
-                }
-            });
+            reloadPage(numPage)
         }
         else{
-
             research(numPage)
         }
     }
@@ -286,19 +299,7 @@ function Users() {
 
     }
 
-    //Xóa tìm kiếm
-    const handleDeleteSearch = () => {
-        setInputSearch({
-            name:  '',
-            email:  '',
-            group_role: '',
-            is_active:  '',
-        })
-        document.getElementById("SEARCH-FORM").reset();
-        console.log(inputSearch)
-        setIsResearch(false)
-        loadPage(1)
-    }
+
     
     // RESET DATA
     const resetInput = () => {
@@ -427,7 +428,7 @@ function Users() {
                                 <thead></thead>
                             <tbody>
                                 <tr>
-                                    <td scope="row">Tên</td>
+                                    <td scope="row">Tên <span className='text-danger'>*</span></td>
                                     <td scope="col">
                                         <input type="text" name="name" className="form-control" value={user.name} 
                                         onChange={handleInput} placeholder="Nhập họ tên" />
@@ -435,7 +436,7 @@ function Users() {
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td scope="row">Email</td>
+                                    <td scope="row">Email <span className='text-danger'>*</span></td>
                                     <td scope="col">
                                         <input type="email" name="email" onChange={handleInput} value={user.email} 
                                         className="form-control" placeholder="Nhập email" />
@@ -444,7 +445,7 @@ function Users() {
                                 </tr>
                                 {/* {user.id === '' ? <RenderPassword /> : ''} */}
                                 <tr>
-                                    <td scope="row">Mật khẩu</td>
+                                    <td scope="row">Mật khẩu {user.id === '' ?  <span className='text-danger'>*</span> : '*'}</td>
                                     <td scope="col">
                                         <input type="password" disabled={user.id == '' ? '' : 'disabled'}   name="password" onChange={handleInput} value={user.password} 
                                         className="form-control" placeholder="Nhập mật khẩu" />
@@ -452,7 +453,7 @@ function Users() {
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td scope="row">Mật khẩu xác nhận</td>
+                                    <td scope="row">Mật khẩu xác nhận {user.id === '' ?  <span className='text-danger'>*</span> : '*'}</td>
                                     <td scope="col">
                                         <input type="password" disabled={user.id == '' ? '' : 'disabled'} name="password_confirm" value={user.password_confirm} 
                                         onChange={handleInput} className="form-control" placeholder="Xác nhận nhận mật khẩu" />
@@ -460,7 +461,7 @@ function Users() {
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td scope="row">Nhóm</td>
+                                    <td scope="row">Nhóm <span className='text-danger'>*</span></td>
                                     <td scope="col">
                                         <select className="form-select"  name="group_role" onChange={handleInput}
                                          aria-label="Default select example">

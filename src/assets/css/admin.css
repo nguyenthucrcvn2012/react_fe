@@ -148,3 +148,17 @@ th{
 .page-link:focus{
     box-shadow: none !important;
 }
+.display-image-product {
+    width: 200px;
+    position: absolute;
+    z-index: 2;
+    display: none;
+}
+
+.td-product-name:hover .display-image-product {
+    display: block;
+}
+
+.td-product-name {
+    position: relative;
+}
