@@ -348,7 +348,7 @@ function Customers() {
             is_active: checkedStatus,
         }
 
-        axios.post(`/api/customers`, data).then(res => {
+        axios.post(`/api/customers/store`, data).then(res => {
             if(res.data.status === 200){
                 Swal.fire('Thêm mới', res.data.message, 'success')
                 resetInput()
