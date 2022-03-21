@@ -1,12 +1,14 @@
-import React from "react";
+import React, {useState} from "react";
 
-import { Link, useNavigate } from "react-router-dom"
+import { Link, useNavigate, NavLink } from "react-router-dom"
 import axios from 'axios';
 import Swal from 'sweetalert2'
 
 const Sidebar = () => {
 
     const navigate = useNavigate();
+    const [activeMenu, setActiveMenu] = useState()
+
 
     const LogoutSubmit = (e) => {
         
@@ -28,44 +30,39 @@ const Sidebar = () => {
                     navigate('/login');
                 }
                 else{
-
+                    Swal.fire(
+                        'Đăng xuất',
+                        'Lỗi!',
+                        'error'
+                    )
                 }
             })
         });
     }
-
-    if(!localStorage.getItem('auth_token '))
-    {
-
-    }
-    else {
-
-    }
-
 
     return (
         <div id="layoutSidenav_nav">
             <nav className="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
                 <div className="sb-sidenav-menu">
                     <div className="nav">
-                        <Link className="nav-link" to="/admin/order-management">
-                            <div className="sb-nav-link-icon"><i className="fas fa-chart-area"></i></div>
+                        <NavLink  className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')} to="/admin/order-management">
+                            <div className="sb-nav-link-icon"><i class="fa-brands fa-first-order"></i></div>
                             Đơn hàng
-                        </Link>
-                        <Link className="nav-link" to="/admin/product-management">
-                            <div className="sb-nav-link-icon"><i className="fas fa-chart-area"></i></div>
+                        </NavLink>
+                        <NavLink className="nav-link  " to="/admin/product-management">
+                            <div className="sb-nav-link-icon"><i class="fa-brands fa-product-hunt"></i></div>
                             Sản phẩm
-                        </Link>
-                        <Link className="nav-link" to="/admin/customer-management">
-                            <div className="sb-nav-link-icon"><i className="fas fa-table"></i></div>
+                        </NavLink>
+                        <NavLink className="nav-link  " to="/admin/customer-management">
+                            <div className="sb-nav-link-icon"><i class="fa-solid fa-users"></i></div>
                             Khách hàng
-                        </Link>
-                        <Link className="nav-link" to="/admin/user-management">
-                            <div className="sb-nav-link-icon"><i className="fas fa-table"></i></div>
+                        </NavLink>
+                        <NavLink className="nav-link  " to="/admin/user-management">
+                            <div className="sb-nav-link-icon"><i class="fa-solid fa-user-gear"></i></div>
                             Người dùng
-                        </Link>
+                        </NavLink>
                         <span className="nav-link logout" onClick={LogoutSubmit}>
-                            <div className="sb-nav-link-icon"><i className="fas fa-table"></i>
+                            <div className="sb-nav-link-icon"><i class="fa-solid fa-right-from-bracket"></i>
                             </div>
                             Đăng xuất
                         </span>

@@ -1,9 +1,9 @@
-import React, {useState, useRef, useEffect} from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { Modal, Button } from "react-bootstrap";
 
-import Footer  from "./../../layouts/admin/Footer";
-import Navbar  from "./../../layouts/admin/Navbar";
-import Sidebar  from "./../../layouts/admin/Sidebar";
+import Footer from "./../../layouts/admin/Footer";
+import Navbar from "./../../layouts/admin/Navbar";
+import Sidebar from "./../../layouts/admin/Sidebar";
 import Navigation from '../../layouts/admin/Navigation';
 import Loading from '../../layouts/admin/Loading';
 import axios from 'axios';
@@ -17,6 +17,7 @@ function Product() {
     const [pagination, setPagination] = useState({});// Phân trang
     const [titleForm, setTitleForm] = useState('Thêm mới sản phẩm') //Tiêu đề form
     const [isResearch, setIsResearch] = useState(true) // kiểm tra data có phải đã được tìm kiếm hay không
+    const [productImage, setProductImage] = useState()
     const [inputSearch, setInputSearch] = useState({
         product_name: '',
         is_sales: '',
@@ -34,13 +35,14 @@ function Product() {
         is_sales: '',
         error_list: []
 
-    }); 
+    });
 
+
+    //Tìm kiếm
     const handleInputSearch = (e) => {
         setInputSearch({ ...inputSearch, [e.target.name]: e.target.value })
         console.log(inputSearch)
     }
-
     const submitSearch = (e) => {
         e.preventDefault()
         filterData()
@@ -52,14 +54,22 @@ function Product() {
             filterData()
             console.log(inputSearch)
         }
-    }    
+    }
+    //Xóa tìm kiếm
+    const handleDeleteSearch = () => {
+        setIsResearch(false)
+        setInputSearch({
+            product_name: '',
+            is_sales: '',
+            price_to: '',
+            price_from: ''
+        })
+        document.getElementById("SEARCH-FORM").reset();
+        loadPage(1)
+    }
 
-    const  filterData = () => {
-        // const formData = new FormData();
-        // formData.append('product_name', inputSearch.product_name);
-        // formData.append('is_sales', inputSearch.is_sales);
-        // formData.append('price_to', inputSearch.price_to);
-        // formData.append('price_from', inputSearch.price_from);
+    const filterData = () => {
+
         setIsResearch(true)
         loadPage(1)
     }
@@ -69,63 +79,48 @@ function Product() {
     var noimg = require('../../assets/images/noimage.png')
     const [imgData, setImgData] = useState(noimg);
     //chọn hình sp khi ấn vào hình hiện tại
-    const inputFileRef = useRef( null );
+    const inputFileRef = useRef(null);
     const chooseImage = () => {
         inputFileRef.current.click();
     }
     const onChangePicture = (e) => {
         if (e.target.files[0]) {
-          console.log("picture: ", e.target.files);
-          const reader = new FileReader();
-          reader.addEventListener("load", () => {
-            setImgData(reader.result);
-          });
-          reader.readAsDataURL(e.target.files[0]);
+            const reader = new FileReader();
+            reader.addEventListener("load", () => {
+                setImgData(reader.result);
+            });
+            reader.readAsDataURL(e.target.files[0]);
         }
-      };
+    };
     //Hình ảnh sp
-    const [productImage, setProductImage] = useState({})
     const handleImage = (e) => {
-        alert('set hình ok')
         setProductImage(e.target.files[0])
         onChangePicture(e)
     }
-    
+
     //Xóa hình ảnh
     const removeImage = () => {
         setImgData(noimg)
-        setProductImage({})
+        setProductImage()
     }
 
-    //Xóa tìm kiếm
-    const handleDeleteSearch = () => {
-        setIsResearch(false)
-        loadPage(1)
-        setInputSearch({
-            product_name: '',
-            is_sales: '',
-            price_to: '',
-            price_from: ''
-        })
-        console.log(inputSearch)
-        document.getElementById("SEARCH-FORM").reset();
-    }
 
-    //Đóng mở modal form
+
+    //Đóng modal
     const [show, setShow] = useState(false);
     const handleClose = () => {
         resetInput()
         setShow(false)
     };
 
-    const handleShow = (id) => { 
-        if(id){
-            axios.get(`/api/products/${id}/edit`).then(res => {
-                if(res.data.status === 200){
+    //Mở modal
+    const handleShow = (id) => {
+        if (id) {
+            axios.get(`/api/products/${id}`).then(res => {
+                if (res.data.status === 200) {
                     setTitleForm('Chỉnh sửa sản phẩm')
 
                     setProduct({
-                        ...product,
                         product_id: res.data.product.product_id,
                         product_name: res.data.product.product_name,
                         product_image: '',
@@ -134,18 +129,16 @@ function Product() {
                         is_sales: res.data.product.is_sales,
                         error_list: []
                     })
-
-                    console.log(product, 'ok', res.data.product)
                     setImgData(res.data.product.product_image);
                     setShow(true)
                 }
-                else if(res.data.status === 404){
+                else if (res.data.status === 404) {
                     Swal.fire('Lỗi', res.data.message, 'warning')
                     loadPage(numPage)
                 }
-            }); 
+            });
         }
-        else{
+        else {
             resetInput()
             setTitleForm('Thêm mới sản phẩm')
             setShow(true)
@@ -153,16 +146,16 @@ function Product() {
     }
 
     const handleInput = (e) => {
-        setProduct({...product, [e.target.name]: e.target.value})
+        setProduct({ ...product, [e.target.name]: e.target.value })
         console.log(product)
     }
 
     // RESET DATA
     const resetInput = () => {
         setProduct({
-            product_id:  '',
-            product_name:  '',
-            product_price:  '',
+            product_id: '',
+            product_name: '',
+            product_price: '',
             product_image: '',
             description: '',
             is_sales: '',
@@ -175,123 +168,103 @@ function Product() {
 
     //RENDER
     var tableHTML = ""
-    if(loading){
-        tableHTML =  (
+    if (loading) {
+        tableHTML = (
             <td colSpan={6}>
                 <Loading />
             </td>
         )
     }
-    else if(products.length > 0) {
+    else if (products.length > 0) {
         let numberProduct = pagination.current_page * 10;
         tableHTML = products?.map((pro, idx) => {
-        let numPro = idx + 1 + numberProduct - 10 ;
-        return (
-            <tr key={idx}>
-                <td>{numPro}</td>
-                <td>{pro.product_id}</td>
-                <td>{pro.product_name}</td>
-                <td>{pro.description}</td>
-                <td>{pro.product_price}</td>
-                {/* <td>{moment(pro.created_at).format('YYYY MM DD')}</td> */}
-                <td>
-                    {pro.is_sales === 1 ? 
-                        <span className='text-success'>Đang bán</span> :
-                        <span className='text-danger'>Ngừng bán</span>
-                    }
-                </td>
-                <td className="text-center">
-                    <span className='icon_btn' onClick={() => handleShow(pro.product_id)}>
-                        <i className="fa-solid fa-pencil"></i>
-                    </span>
-                    <span className='icon_btn'>
-                        <i className="fa-solid fa-trash" onClick={(e) => deleteHandler(e, pro.product_id, pro.product_name)} ></i>
-                    </span>
-                </td>
-            </tr>
+            let numPro = idx + 1 + numberProduct - 10;
+            return (
+                <tr key={idx}>
+                    <td>{numPro}</td>
+                    <td>{pro.product_id}</td>
+                    <td>{pro.product_name}</td>
+                    <td>{pro.description}</td>
+                    <td>{pro.product_price}</td>
+                    {/* <td>{moment(pro.created_at).format('YYYY MM DD')}</td> */}
+                    <td>
+                        {pro.is_sales === 1 ?
+                            <span className='text-success'>Đang bán</span> :
+                            <span className='text-danger'>Ngừng bán</span>
+                        }
+                    </td>
+                    <td className="text-center">
+                        <span className='icon_btn' onClick={() => handleShow(pro.product_id)}>
+                            <i className="fa-solid fa-pencil"></i>
+                        </span>
+                        <span className='icon_btn'>
+                            <i className="fa-solid fa-trash" onClick={(e) => deleteHandler(e, pro.product_id, pro.product_name)} ></i>
+                        </span>
+                    </td>
+                </tr>
             );
         })
-        }
-        else {
-            tableHTML = (
-                <tr ><td colSpan={7}>Không có dữ liệu</td> </tr>
-            )
-        }
+    }
+    else {
+        tableHTML = (
+            <tr ><td colSpan={7}>Không có dữ liệu</td> </tr>
+        )
+    }
 
-        //Cập nhật sản phẩm
-        const submitUpdateProduct =  (e) => {
-            e.preventDefault();
+    //Cập nhật sản phẩm
+    const submitUpdateProduct = (e) => {
+        e.preventDefault();
 
-            console.log(product)
+        const formData = new FormData();
+        formData.append('product_name', product.product_name);
+        formData.append('product_price', product.product_price);
+        formData.append('description', product.description);
+        formData.append('is_sales', product.is_sales);
+        formData.append('product_image', productImage);
 
-            const formData = new FormData();
-            formData.append('product_name', product.product_name);
-            formData.append('product_price', product.product_price);
-            formData.append('description', product.description );
-            formData.append('is_sales', product.is_sales);
-            formData.append('product_image', productImage);
-
-            const data = {
-                product_name: product.product_name,
-                product_price: product.product_price,
-                description: product.description,
-                is_sales: product.is_sales,
-                product_image: productImage
+        axios.post(`/api/products/${product.product_id}/update`, formData).then(res => {
+            if (res.data.status === 200) {
+                console.log(res.data)
+                Swal.fire('Cập nhật sản phẩm', res.data.message, 'success')
+                loadPage(numPage)
+                setShow(false)
+                resetInput()
+                setProduct({
+                    product_id: '',
+                    product_name: '',
+                    product_image: '',
+                    product_price: '',
+                    description: '',
+                    is_sales: '',
+                    error_list: []
+                })
             }
+            else if (res.data.status === 401 || res.data.status === 500) {
+                Swal.fire('Cập nhật sản phẩm', res.data.message, 'error')
+                loadPage(numPage)
+            }
+            else {
 
-
-            axios.put(`/api/products/${product.product_id}`, data).then(res => {
-                    console.log(res.data)
-                if(res.data.status === 200){
-                    Swal.fire('Cập nhật sản phẩm', res.data.message, 'success')
-                    loadPage(numPage)
-                    setShow(false)
-                    resetInput()
-                    setProduct({
-                        product_id: '',
-                        product_name: '',
-                        product_image: '',
-                        product_price: '',
-                        description: '',
-                        is_sales: '',
-                        error_list: []
-                    })
-                }
-                else if(res.data.status === 401 || res.data.status === 500){
-                    Swal.fire('Cập nhật sản phẩm', res.data.message, 'error')
-                    loadPage(numPage)
-                }
-                else{
-    
-                    setProduct({...product, error_list: res.data.validation_errors})
-                }
-            }); 
-
-
-        }
+                setProduct({ ...product, error_list: res.data.validation_errors })
+            }
+        });
+    }
 
     //Lưu mới sản phẩm
-    const submitStoreProduct = (e) =>{
+    const submitStoreProduct = (e) => {
         e.preventDefault()
 
         const formData = new FormData();
-        formData.append('product_name', product.product_name  );
-        formData.append('product_price', product.product_price );
-        formData.append('description', product.description );
-        formData.append('is_sales', product.is_sales );
+        formData.append('product_name', product.product_name);
+        formData.append('product_price', product.product_price);
+        formData.append('description', product.description);
+        formData.append('is_sales', product.is_sales);
         formData.append('product_image', productImage);
 
-        console.log(product)
         console.log(formData)
-        // const data = {
-        //     product_name: product.product_name,
-        //     product_price: product.product_price,
-        //     description: product.description,
-        //     is_sales: product.is_sales,
-        // }
 
-        axios.post(`/api/products`, formData).then(res => {
-            if(res.data.status === 200){
+        axios.post(`/api/products/store`, formData).then(res => {
+            if (res.data.status === 200) {
 
                 Swal.fire('Thêm mới', res.data.message, 'success')
 
@@ -299,72 +272,34 @@ function Product() {
                 setShow(false)
                 resetInput()
             }
-            else if(res.data.status === 401){
+            else if (res.data.status === 401) {
 
                 Swal.fire('Thêm mới', res.data.message, 'success')
                 loadPage(numPage)
             }
-            else{
+            else {
 
-                setProduct({...product, error_list: res.data.validation_errors})
+                setProduct({ ...product, error_list: res.data.validation_errors })
             }
-        }); 
+        });
     }
 
     // Xử lí phân trang
     var numPage; // Số trang hiện tại
     const callBackChildren = (num) => {
-        
-      
+
         numPage = num
         console.log(numPage)
         loadPage(numPage)
     }
 
-    // Định dạng số tiền
-    // const convertNum = (num) => {
-    //     return  new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'VND' }).format(num);
-    // }
-
     //Hàm call api lấy danh sách sp
-    const loadPage = (numPage, formData) => {
+    const loadPage = (numPage) => {
 
-        if(!isResearch) {
+        if (!isResearch) {
             setLoading(true);
             axios.get(`/api/products?page=${numPage}`).then(res => {
-                if(res.data.status === 200){
-                    console.log(res.data)
-                    setProducts(res.data.products.data)
-                    setPagination({
-                        current_page: res.data.products.current_page,
-                        last_page: res.data.products.last_page,
-                        to: res.data.products.to,
-                        total: res.data.products.total,
-                        from: res.data.products.from
-                    })
-                    setLoading(false);
-                }
-                else{
-                    Swal.fire('Tìm kiếm', res.data.message, 'warning')
-                    setLoading(false);
-                }
-            }); 
-        }
-        else{
-            const formData = new FormData();
-            formData.append('product_name', inputSearch.product_name);
-            formData.append('is_sales', inputSearch.is_sales);
-            formData.append('price_to', inputSearch.price_to);
-            formData.append('price_from', inputSearch.price_from);
-            research(numPage, formData)
-        }
-    }
-
-        //call api filter
-        const research = (numPage, formData) => {
-            setLoading(true);
-            axios.post(`api/products/search?page=${numPage}`, formData).then(res => {
-                if ( res.data.status === 200) {
+                if (res.data.status === 200) {
                     console.log(res.data)
                     setProducts(res.data.products.data)
                     setPagination({
@@ -382,6 +317,39 @@ function Product() {
                 }
             });
         }
+        else {
+            
+            research(numPage)
+        }
+    }
+
+    //call api filter
+    const research = (numPage) => {
+        const formData = new FormData();
+        formData.append('product_name', inputSearch.product_name);
+        formData.append('is_sales', inputSearch.is_sales);
+        formData.append('price_to', inputSearch.price_to);
+        formData.append('price_from', inputSearch.price_from);
+        setLoading(true);
+        axios.post(`api/products/search?page=${numPage}`, formData).then(res => {
+            if (res.data.status === 200) {
+                console.log(res.data)
+                setProducts(res.data.products.data)
+                setPagination({
+                    current_page: res.data.products.current_page,
+                    last_page: res.data.products.last_page,
+                    to: res.data.products.to,
+                    total: res.data.products.total,
+                    from: res.data.products.from
+                })
+                setLoading(false);
+            }
+            else {
+                Swal.fire('Tìm kiếm', res.data.message, 'warning')
+                setLoading(false);
+            }
+        });
+    }
 
     //Xóa sản phẩm
     const deleteHandler = (e, id, name) => {
@@ -397,7 +365,7 @@ function Product() {
         }).then((result) => {
             if (result.isConfirmed) {
 
-                axios.delete(`api/products/${id}`).then(res => {
+                axios.post(`api/products/${id}/delete`).then(res => {
                     if (res.data.status === 200) {
                         Swal.fire('Xóa!', res.data.message, 'success')
                         const formData = new FormData();
@@ -417,105 +385,98 @@ function Product() {
     }
 
     //call api sau khi load trang
-    useEffect(() =>{
-            
-        
-        const formData = new FormData();
-        formData.append('product_name', inputSearch.product_name);
-        formData.append('is_sales', inputSearch.is_sales);
-        formData.append('price_to', inputSearch.price_to);
-        formData.append('price_from', inputSearch.price_from);
-        loadPage(numPage, formData);
+    useEffect(() => {
+        loadPage(numPage);
 
     }, []);
 
-    return (        
-    <div className="sb-nav-fixed">
+    return (
+        <div className="sb-nav-fixed">
             <Modal size="lg" show={show} onHide={handleClose}>
                 <Modal.Header closeButton>
-                <Modal.Title>{titleForm}</Modal.Title>
+                    <Modal.Title>{titleForm}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                <form className="form-product" encType="multipart/form-data">
-                    <div className="row">
-                        <div className="col-md-7">
-                            <table className="w-100">
-                            <tr>
-                                <th scope="col">Tên sản phẩm</th>
-                                <th scope="col">
-                                    <input type="text" name="product_name" value={product.product_name}  onChange={handleInput}
-                                     className="form-control" placeholder="Nhập tên sản phẩm" />
-                                    <span className="text-alert">{product.error_list.product_name}</span>
-                                </th>
-                            </tr>
-                            <tr>
-                                <th scope="row">Giá bán</th>
-                                <th scope="col">
-                                    <input type="number" name="product_price" value={product.product_price}  onChange={handleInput}
-                                     className="form-control" min="0" placeholder="Nhập giá bán" />
-                                    <span className="text-alert">{product.error_list.product_price}</span>
-                                </th>
-                            </tr>
-                            <tr>
-                                <th scope="row">Mô tả</th>
-                                <th scope="col">
-                                    <textarea rows="6" name="description" value={product.description} onChange={handleInput}
-                                     className="form-control" placeholder="Nhập mô tả" />
-                                    <span className="text-alert">{product.error_list.description}</span>
-                                </th>
-                            </tr>
-                            <tr>
-                                <th scope="row">Trạng thái</th>
-                                <th scope="col">
-                                    <select className="form-select" onChange={handleInput} name="is_sales" 
-                                    aria-label="Default select example">
-                                        <option value="" >Chọn trạng thái</option>
-                                        <option value="1" selected={product.is_sales === 1 ? 'selected' : ''}>Đang bán</option>
-                                        <option value="0" selected={product.is_sales === 0 ? 'selected' : ''}>Ngừng bán</option>
-                                    </select>
-                                    <span className="text-alert">{product.error_list.is_sales}</span>
-                                </th>
-                            </tr>
-                        </table>
-                        </div>
-                        <div className="col-md-5">
-                            <h5>Hình ảnh</h5>
-                            <input type="file"  accept="image/*" name="product_image"  onChange={handleImage}  className="mb-3" ref={inputFileRef} />
-                            <div className="image-review" id="REVIEW-IMAGE">
-                                <img onClick={chooseImage} src={imgData} alt="" />
+                    <form className="form-product" encType="multipart/form-data">
+                        <div className="row">
+                            <div className="col-md-7">
+                                <table className="w-100">
+                                    <tr>
+                                        <th scope="col">Tên sản phẩm</th>
+                                        <th scope="col">
+                                            <input type="text" name="product_name" value={product.product_name} onChange={handleInput}
+                                                className="form-control" placeholder="Nhập tên sản phẩm" />
+                                            <span className="text-alert">{product.error_list.product_name}</span>
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Giá bán</th>
+                                        <th scope="col">
+                                            <input type="number" name="product_price" value={product.product_price} onChange={handleInput}
+                                                className="form-control" min="0" placeholder="Nhập giá bán" />
+                                            <span className="text-alert">{product.error_list.product_price}</span>
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Mô tả</th>
+                                        <th scope="col">
+                                            <textarea rows="6" name="description" value={product.description} onChange={handleInput}
+                                                className="form-control" placeholder="Nhập mô tả" />
+                                            <span className="text-alert">{product.error_list.description}</span>
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Trạng thái</th>
+                                        <th scope="col">
+                                            <select className="form-select" onChange={handleInput} name="is_sales"
+                                                aria-label="Default select example">
+                                                <option value="" >Chọn trạng thái</option>
+                                                <option value="1" selected={product.is_sales === 1 ? 'selected' : ''}>Đang bán</option>
+                                                <option value="0" selected={product.is_sales === 0 ? 'selected' : ''}>Ngừng bán</option>
+                                            </select>
+                                            <span className="text-alert">{product.error_list.is_sales}</span>
+                                        </th>
+                                    </tr>
+                                </table>
                             </div>
+                            <div className="col-md-5">
+                                <h5>Hình ảnh</h5>
+                                <input type="file" accept="image/*" name="product_image" onChange={handleImage} className="mb-3" ref={inputFileRef} />
+                                <div className="image-review" id="REVIEW-IMAGE">
+                                    <img onClick={chooseImage} src={imgData} alt="" />
+                                </div>
                                 <span className="text-alert">{product.error_list.product_image}</span>
 
-                            <div className="box-upload-image mt-3">
-                                <button className='btn-upload btn-primary'>Upload</button> 
-                                <button className='btn-remove btn-danger' onClick={removeImage}>Xóa file</button>
-                                <input type="text" placeholder='Tên file' disabled/>
+                                <div className="box-upload-image mt-3">
+                                    <button className='btn-upload btn-primary'>Upload</button>
+                                    <button className='btn-remove btn-danger' onClick={removeImage}>Xóa file</button>
+                                    <input type="text" placeholder='Tên file' disabled />
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <Modal.Footer>
-                    <Button variant="secondary" onClick={handleClose}>
-                        Đóng
-                    </Button>
-                    <Button variant="primary" onClick={product.product_id !== '' ?  submitUpdateProduct : submitStoreProduct} >
-                        Lưu
-                    </Button>
-                    </Modal.Footer>
-                </form>
-            </Modal.Body>
-                
+                        <Modal.Footer>
+                            <Button variant="secondary" onClick={handleClose}>
+                                Đóng
+                            </Button>
+                            <Button variant="primary" onClick={product.product_id !== '' ? submitUpdateProduct : submitStoreProduct} >
+                                Lưu
+                            </Button>
+                        </Modal.Footer>
+                    </form>
+                </Modal.Body>
+
             </Modal>
 
-        <Navbar />
+            <Navbar />
 
             <div id="layoutSidenav">
 
-            <Sidebar />
-        
+                <Sidebar />
+
                 <div id="layoutSidenav_content">
                     <main>
-                        <div className="container-fluid px-4"> 
-                            
+                        <div className="container-fluid px-4">
+
                             <div className="card mb-4 mt-4">
 
                                 <div className="card-header">
@@ -533,30 +494,30 @@ function Product() {
                                             <div className="row p-3">
                                                 <div className="col-md-3 mb-1">
                                                     <label htmlFor="name">Tên sản phẩm</label>
-                                                    <input type="text" name="product_name"  className="form-control" 
-                                                    value={inputSearch.product_name} onChange={handleInputSearch}
-                                                     placeholder='Nhập tên sản phẩm'  onKeyPress={handleKeyDown}/>   
+                                                    <input type="text" name="product_name" className="form-control"
+                                                        value={inputSearch.product_name} onChange={handleInputSearch}
+                                                        placeholder='Nhập tên sản phẩm' onKeyPress={handleKeyDown} />
                                                 </div>
                                                 <div className="col-md-3  mb-1">
                                                     <label htmlFor="status">Trạng thái</label>
                                                     <select className="form-select" name="is_sales" onChange={handleInputSearch} aria-label="Default select example">
-                                                    <option value="" >Chọn trạng thái</option>
-                                                    <option value="1">Đang bán</option>
-                                                    <option value="0">Ngừng bán</option>
+                                                        <option value="" >Chọn trạng thái</option>
+                                                        <option value="1">Đang bán</option>
+                                                        <option value="0">Ngừng bán</option>
                                                     </select>
                                                 </div>
                                                 <div className="col-md-3 col-6 mb-1">
                                                     <label htmlFor="price_from">Giá bán từ</label>
-                                                    <input type="number" min="0" onChange={handleInputSearch}  onKeyPress={handleKeyDown} value={inputSearch.price_from}  className="form-control" name="price_from"/>   
+                                                    <input type="number" min="0" onChange={handleInputSearch} onKeyPress={handleKeyDown} value={inputSearch.price_from} className="form-control" name="price_from" />
                                                 </div>
                                                 <div className="col-md-3 col-6 mb-1">
                                                     <label htmlFor="price_to">Giá bán đến</label>
-                                                    <input type="number" min="0" onChange={handleInputSearch}  onKeyPress={handleKeyDown} value={inputSearch.price_to}  className="form-control" name="price_to"/>   
+                                                    <input type="number" min="0" onChange={handleInputSearch} onKeyPress={handleKeyDown} value={inputSearch.price_to} className="form-control" name="price_to" />
                                                 </div>
                                                 <div className="col-md-12 col-12 mb-1 box-btn-search mt-4">
-                                                    <button type="button"  className="btn btn-primary btn-search  m-1" onClick={submitSearch}><i className="fa-solid fa-magnifying-glass"></i></button>
+                                                    <button type="button" className="btn btn-primary btn-search  m-1" onClick={submitSearch}><i className="fa-solid fa-magnifying-glass"></i></button>
                                                     &nbsp;
-                                                    <button type="button"  className="btn btn-danger btn-search  m-1" onClick={handleDeleteSearch}><i className="fa-solid fa-x"></i> Xóa tìm</button> 
+                                                    <button type="button" className="btn btn-danger btn-search  m-1" onClick={handleDeleteSearch}><i className="fa-solid fa-x"></i> Xóa tìm</button>
                                                     &nbsp;
                                                 </div>
                                             </div>
@@ -576,23 +537,23 @@ function Product() {
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                { 
-                                                   tableHTML ? tableHTML : <tr ><td colSpan={6}>Không có dữ liệu</td> </tr>
+                                                {
+                                                    tableHTML ? tableHTML : <tr ><td colSpan={6}>Không có dữ liệu</td> </tr>
                                                 }
                                             </tbody>
                                         </table>
-                                        <Navigation Paginate={pagination}  childToParent={callBackChildren}/>
+                                        <Navigation Paginate={pagination} childToParent={callBackChildren} />
                                     </div>
                                 </div>
-                            </div> 
+                            </div>
 
                         </div>
                     </main>
                     <Footer />
                 </div>
+            </div>
+
         </div>
-        
-    </div>
     );
 }
 

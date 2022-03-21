@@ -144,3 +144,7 @@ th{
 .box-input .fa-x {
     color: #ff0000;
 }
+
+.page-link:focus{
+    box-shadow: none !important;
+}
