@@ -46,23 +46,23 @@ const Sidebar = () => {
                 <div className="sb-sidenav-menu">
                     <div className="nav">
                         <NavLink  className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')} to="/admin/order-management">
-                            <div className="sb-nav-link-icon"><i class="fa-brands fa-first-order"></i></div>
+                            <div className="sb-nav-link-icon"><i className="fa-brands fa-first-order"></i></div>
                             Đơn hàng
                         </NavLink>
                         <NavLink className="nav-link  " to="/admin/product-management">
-                            <div className="sb-nav-link-icon"><i class="fa-brands fa-product-hunt"></i></div>
+                            <div className="sb-nav-link-icon"><i className="fa-brands fa-product-hunt"></i></div>
                             Sản phẩm
                         </NavLink>
                         <NavLink className="nav-link  " to="/admin/customer-management">
-                            <div className="sb-nav-link-icon"><i class="fa-solid fa-users"></i></div>
+                            <div className="sb-nav-link-icon"><i className="fa-solid fa-users"></i></div>
                             Khách hàng
                         </NavLink>
                         <NavLink className="nav-link  " to="/admin/user-management">
-                            <div className="sb-nav-link-icon"><i class="fa-solid fa-user-gear"></i></div>
+                            <div className="sb-nav-link-icon"><i className="fa-solid fa-user-gear"></i></div>
                             Người dùng
                         </NavLink>
                         <span className="nav-link logout" onClick={LogoutSubmit}>
-                            <div className="sb-nav-link-icon"><i class="fa-solid fa-right-from-bracket"></i>
+                            <div className="sb-nav-link-icon"><i className="fa-solid fa-right-from-bracket"></i>
                             </div>
                             Đăng xuất
                         </span>
