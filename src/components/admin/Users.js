@@ -90,11 +90,11 @@ function Users() {
     }
 
     // Xóa USER
-    const deleteHandler = (e, id) => {
+    const deleteHandler = (email, id) => {
 
         Swal.fire({
             title: 'Xác nhận xóa',
-            text: "Bạn có chắc chắn xóa không?",
+            text: "Bạn có chắc chắn xóa tài khoản " + email + " không?",
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
@@ -110,6 +110,7 @@ function Users() {
                         loadPage(numPage)
                     }
                     else if (res.data.status === 404) {
+                        loadPage(numPage)
                         Swal.fire('Xóa!', res.data.message, 'error')
                     }
                 });
@@ -141,7 +142,7 @@ function Users() {
                 setLoading(false);
             }
             else {
-                Swal.fire('Tìm kiếm', res.data.message, 'warning')
+                Swal.fire('Tìm kiếm', res.data.message, 'error')
                 setLoading(false);
             }
         });
@@ -186,11 +187,11 @@ function Users() {
     }, []);
 
     // Khóa Tài khoản
-    const unAcitveHandler = (e, id) => {
+    const unAcitveHandler = (email, id) => {
 
         Swal.fire({
             title: 'Khóa tài khoản',
-            text: "Bạn có chắc chắn khóa không?",
+            text: "Bạn có chắc chắn khóa tài khoản " + email + " không?",
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
@@ -205,7 +206,7 @@ function Users() {
                         Swal.fire('Khóa!', res.data.message, 'success')
                         loadPage(numPage)
                     }
-                    else if (res.data.status === 404) {
+                    else if (res.data.status === 404 || res.data.status === 500) {
                         Swal.fire('Khóa!', res.data.message, 'error')
                     }
                 });
@@ -215,11 +216,11 @@ function Users() {
     }
 
     //Mở khóa tài khoản
-    const acitveHandler = (e, id) => {
+    const acitveHandler = (email, id) => {
 
         Swal.fire({
             title: 'Mở Khóa tài khoản',
-            text: "Bạn có chắc chắn mở khóa không?",
+            text: "Bạn có chắc chắn mở khóa tài khoản " + email + " không?",
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
@@ -234,7 +235,7 @@ function Users() {
                         Swal.fire('Mở Khóa!', res.data.message, 'success')
                         loadPage(numPage)
                     }
-                    else if (res.data.status === 404) {
+                    else if (res.data.status === 404 || res.data.status === 500) {
                         Swal.fire('Mở Khóa!', res.data.message, 'error')
                     }
                 });
@@ -273,15 +274,15 @@ function Users() {
                             <span className='icon_btn' onClick={() => handleShow(user.id)}>
                                 <i className="fa-solid fa-pencil"></i>
                             </span>
-                            <span className='icon_btn' onClick={(e) => deleteHandler(e, user.id)}>
+                            <span className='icon_btn' onClick={() => deleteHandler(user.email, user.id)}>
                                 <i className="fa-solid fa-trash"></i>
                             </span>
                             {user.is_active === 1 ?
-                                <span className='icon_btn' onClick={(e) => unAcitveHandler(e, user.id)}>
+                                <span className='icon_btn' onClick={() => unAcitveHandler(user.email, user.id)}>
                                     <i className="fa-solid fa-user-check"></i>
                                 </span>
                                 :
-                                <span className='icon_btn' onClick={(e) => acitveHandler(e, user.id)}>
+                                <span className='icon_btn' onClick={() => acitveHandler(user.email, user.id)}>
                                     <i className="fa-solid fa-user-xmark"></i>
                                 </span>
                             }
@@ -331,7 +332,7 @@ function Users() {
         axios.post(`/api/users/store`, data).then(res => {
             if(res.data.status === 200){
                 handleDeleteSearch()
-                Swal.fire('Thêm mới', res.data.user, 'success')
+                Swal.fire('Thêm mới', res.data.message, 'success')
                 setShow(false)
             }
             else if(res.data.status === 500){
@@ -364,8 +365,10 @@ function Users() {
                 setShow(false)
                 loadPage(numPage)
             }
-            else if(res.data.status === 401){
-                Swal.fire('Cập nhật', res.data.message, 'success')
+            else if(res.data.status === 404 || res.data.status === 500){
+                loadPage(numPage)
+                setShow(false)
+                Swal.fire('Cập nhật', res.data.message, 'error')
             }
             else{
                 setUser({...user, error_list: res.data.validation_errors})

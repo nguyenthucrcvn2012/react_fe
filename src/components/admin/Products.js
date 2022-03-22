@@ -53,6 +53,13 @@ function Product() {
             console.log(inputSearch)
         }
     }
+    const handleInput = (e) => {
+        setProduct({ ...product, [e.target.name]: e.target.value })
+        console.log(product)
+    }
+    const formatPrice = (price) => {
+        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+    }
     //Xóa tìm kiếm
     const handleDeleteSearch = () => {
         setIsResearch(false)
@@ -65,14 +72,12 @@ function Product() {
         document.getElementById("SEARCH-FORM").reset();
         reloadPage(numPage)
     }
-
+    //Tìm kiếm
     const filterData = () => {
 
         setIsResearch(true)
         loadPage(1)
     }
-
-
     //Hình mặc định
     var noimg = require('../../assets/images/noimage.png')
     const [imgData, setImgData] = useState(noimg);
@@ -95,20 +100,17 @@ function Product() {
         setProductImage(e.target.files[0])
         onChangePicture(e)
     }
-
     //Xóa hình ảnh
     const removeImage = () => {
         setImgData(noimg)
         setProductImage()
     }
-
     //Đóng modal
     const [show, setShow] = useState(false);
     const handleClose = () => {
         resetInput()
         setShow(false)
     };
-
     //Mở modal
     const handleShow = (id) => {
         if (id) {
@@ -125,7 +127,9 @@ function Product() {
                         is_sales: res.data.product.is_sales,
                         error_list: []
                     })
-                    setImgData(res.data.product.product_image);
+                    if(res.data.product.product_image !== null) {
+                        setImgData(res.data.product.product_image);
+                    }
                     setShow(true)
                 }
                 else if (res.data.status === 404) {
@@ -140,12 +144,6 @@ function Product() {
             setShow(true)
         }
     }
-
-    const handleInput = (e) => {
-        setProduct({ ...product, [e.target.name]: e.target.value })
-        console.log(product)
-    }
-
     // RESET DATA
     const resetInput = () => {
         setProduct({
@@ -160,7 +158,6 @@ function Product() {
         removeImage()
         // document.getElementById('USER_FORM').reset()
     }
-
 
     //RENDER
     var tableHTML = ""
@@ -184,7 +181,7 @@ function Product() {
                         <img className='display-image-product' src={pro.product_image} alt="" />
                     </td>
                     <td>{pro.description}</td>
-                    <td>{pro.product_price}</td>
+                    <td>{formatPrice(pro.product_price)}</td>
                     {/* <td>{moment(pro.created_at).format('YYYY MM DD')}</td> */}
                     <td>
                         {pro.is_sales === 1 ?
@@ -238,8 +235,10 @@ function Product() {
                     error_list: []
                 })
             }
-            else if (res.data.status === 401 || res.data.status === 500) {
+            else if (res.data.status === 500 || res.data.status === 404) {
                 Swal.fire('Cập nhật sản phẩm', res.data.message, 'error')
+                setShow(false)
+                resetInput()
                 loadPage(numPage)
             }
             else {
@@ -374,14 +373,10 @@ function Product() {
                 axios.post(`api/products/${id}/delete`).then(res => {
                     if (res.data.status === 200) {
                         Swal.fire('Xóa!', res.data.message, 'success')
-                        const formData = new FormData();
-                        formData.append('product_name', inputSearch.product_name);
-                        formData.append('is_sales', inputSearch.is_sales);
-                        formData.append('price_to', inputSearch.price_to);
-                        formData.append('price_from', inputSearch.price_from);
-                        loadPage(numPage, formData)
+                        loadPage(numPage)
                     }
-                    else if (res.data.status === 404) {
+                    else if (res.data.status === 404 || res.data.status === 500) {
+                        loadPage(numPage)
                         Swal.fire('Xóa!', res.data.message, 'error')
                     }
                 });

@@ -213,6 +213,7 @@ function Customers() {
 
         setLoading(true);
         axios.post(`api/customers/search?page=${numPage}`, formData).then(res => {
+            console.log(res)
             if ( res.data.status === 200) {
                 setCustomers(res.data.customers.data)
                 setPagination({
@@ -355,8 +356,8 @@ function Customers() {
                 setShow(false)
                 loadPage(numPage)
             }
-            else if(res.data.status === 401){
-                Swal.fire('Thêm mới', res.data.message, 'success')
+            else if(res.data.status === 500){
+                Swal.fire('Thêm mới', res.data.message, 'error')
                 loadPage(numPage)
             }
             else{
@@ -386,7 +387,11 @@ function Customers() {
                 setIsEdit(null)
                 loadPage(numPage)
             }
-            else if(res.data.status === 401 || res.data.status === 500){
+            else if(res.data.status === 401 || res.data.status === 500 || res.data.status === 404){
+                resetInput()
+                setShow(false)
+                setIsEdit(null)
+                loadPage(numPage)
                 Swal.fire('Cập nhật', res.data.message, 'error')
             }
             else{
@@ -448,9 +453,9 @@ function Customers() {
                         </span>
                         }
                        
-                        <span className='icon_btn' onClick={() => handleShow(cus.customer_id)}>
+                        {/* <span className='icon_btn' onClick={() => handleShow(cus.customer_id)}>
                             <i className="fa-solid fa-pen-fancy"></i>
-                        </span>
+                        </span> */}
                     </td>
                 </tr>
                 );
