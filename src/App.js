@@ -2,10 +2,7 @@ import React from 'react';
 import {
   BrowserRouter as Router,
   Routes,
-  Link,
   Route,
-  Navigate,
-  Outlet
 } from 'react-router-dom';
 import axios from 'axios';
 
@@ -13,6 +10,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "./../src/assets/css/admin.css";
 import "./assets/css/styles.css";
 import "./assets/js/scripts";
+import moment from 'moment';
 
 import MasterLayout from './layouts/admin/MasterLayout';  
 
@@ -26,7 +24,7 @@ import Page404 from './components/pages/Page404';
 import PrivateRoute from './components/routing/PrivateRoute';
 import PublicRoute from './components/routing/PublicRoute';
 
-axios.defaults.baseURL = 'http://103.173.155.91:98/';
+axios.defaults.baseURL = 'http://localhost:8000/';
 axios.defaults.headers.post['Content-Type'] = 'application/json';
 axios.defaults.headers.post['Accept'] = 'application/json';
 
@@ -40,6 +38,19 @@ axios.interceptors.request.use(function (config) {
 
 });
 
+let expiredAt = localStorage.getItem('auth_expired_at');
+const nowTime = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');;
+
+if(expiredAt && nowTime) {
+  console.log(expiredAt)
+  console.log(nowTime.toLocaleString())
+  if (expiredAt < nowTime ){
+    localStorage.removeItem('auth_username');
+    localStorage.removeItem('auth_expired_at');
+    localStorage.removeItem('auth_token');
+    alert('Lỗi vui lòng đăng nhập lại')
+  }
+}
 
 function App() {
   return (

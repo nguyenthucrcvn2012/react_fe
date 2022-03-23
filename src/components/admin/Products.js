@@ -7,8 +7,8 @@ import Sidebar from "./../../layouts/admin/Sidebar";
 import Navigation from '../../layouts/admin/Navigation';
 import Loading from '../../layouts/admin/Loading';
 import axios from 'axios';
-// import moment from 'moment';
 import Swal from "sweetalert2";
+import NumberFormat from 'react-number-format';
 
 function Product() {
 
@@ -18,6 +18,7 @@ function Product() {
     const [titleForm, setTitleForm] = useState('Thêm mới sản phẩm') //Tiêu đề form
     const [isResearch, setIsResearch] = useState(true) // kiểm tra data có phải đã được tìm kiếm hay không
     const [productImage, setProductImage] = useState()
+    const [isDeleteImage, setIsDeleteImage] = useState(false)
     const [inputSearch, setInputSearch] = useState({
         product_name: '',
         is_sales: '',
@@ -35,14 +36,13 @@ function Product() {
         error_list: []
     });
 
-
     //Tìm kiếm
     const handleInputSearch = (e) => {
         setInputSearch({ ...inputSearch, [e.target.name]: e.target.value })
         console.log(inputSearch)
     }
     const submitSearch = (e) => {
-        e.preventDefault()
+        e.preventDefault();
         filterData()
         console.log(inputSearch)
     }
@@ -83,11 +83,12 @@ function Product() {
     const [imgData, setImgData] = useState(noimg);
     //chọn hình sp khi ấn vào hình hiện tại
     const inputFileRef = useRef(null);
-    const chooseImage = () => {
+    const chooseImage = (e) => {
         inputFileRef.current.click();
     }
     const onChangePicture = (e) => {
         if (e.target.files[0]) {
+            setIsDeleteImage(false)
             const reader = new FileReader();
             reader.addEventListener("load", () => {
                 setImgData(reader.result);
@@ -104,6 +105,8 @@ function Product() {
     const removeImage = () => {
         setImgData(noimg)
         setProductImage()
+        setIsDeleteImage(true)
+        // document.getElementById('file').value = "";
     }
     //Đóng modal
     const [show, setShow] = useState(false);
@@ -127,7 +130,7 @@ function Product() {
                         is_sales: res.data.product.is_sales,
                         error_list: []
                     })
-                    if(res.data.product.product_image !== null) {
+                    if (res.data.product.product_image !== null) {
                         setImgData(res.data.product.product_image);
                     }
                     setShow(true)
@@ -217,6 +220,7 @@ function Product() {
         formData.append('description', product.description);
         formData.append('is_sales', product.is_sales);
         formData.append('product_image', productImage);
+        formData.append('is_delete_image', isDeleteImage);
 
         axios.post(`/api/products/${product.product_id}/update`, formData).then(res => {
             if (res.data.status === 200) {
@@ -299,7 +303,7 @@ function Product() {
             reloadPage(numPage)
         }
         else {
-            
+
             research(numPage)
         }
     }
@@ -413,8 +417,9 @@ function Product() {
                                     <tr>
                                         <th scope="row">Giá bán <span className='text-danger'>*</span></th>
                                         <th scope="col">
-                                            <input type="number" name="product_price" value={product.product_price} onChange={handleInput}
-                                                className="form-control" min="0" placeholder="Nhập giá bán" />
+                                            <input type="number"  name="product_price" value={Number(product.product_price).toFixed(0)} onChange={handleInput}
+                                               className="form-control" min="0" placeholder="Nhập giá bán" />
+                                        
                                             <span className="text-alert">{product.error_list.product_price}</span>
                                         </th>
                                     </tr>
@@ -442,15 +447,15 @@ function Product() {
                             </div>
                             <div className="col-md-5">
                                 <h5>Hình ảnh</h5>
-                                <input type="file" accept="image/*" name="product_image" onChange={handleImage} className="mb-3" ref={inputFileRef} />
+                                <input type="file" id="file" accept="image/*" name="product_image" hidden onChange={handleImage} className="mb-3" ref={inputFileRef} />
                                 <div className="image-review" id="REVIEW-IMAGE">
                                     <img onClick={chooseImage} src={imgData} alt="" />
                                 </div>
                                 <span className="text-alert">{product.error_list.product_image}</span>
 
                                 <div className="box-upload-image mt-3">
-                                    <button className='btn-upload btn-primary'>Upload</button>
-                                    <button className='btn-remove btn-danger' onClick={removeImage}>Xóa file</button>
+                                    <button type='button' className='btn-upload btn-primary' onClick={chooseImage}>Upload</button>
+                                    <button type='button' className='btn-remove btn-danger' onClick={removeImage}>Xóa file</button>
                                     <input type="text" placeholder='Tên file' disabled />
                                 </div>
                             </div>

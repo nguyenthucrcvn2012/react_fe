@@ -27,24 +27,21 @@ function Login() {
 
     const loginSubmit = (e) => {
         e.preventDefault()
-
         const data = {
             email: inputLogin.email,
             password: inputLogin.password,
             remember: rememberLogin,
         };
-        console.log(data)
-        axios.get(`/sanctum/csrf-cookie`).then(response => {
-
+        axios.get(`/sanctum/csrf-cookie`).then(res => {
             axios.post(`/api/login`, data).then(res => {
+            console.log(res)
                 if(res.data.status === 200)
                     {
                         console.log(res.data);
                         // To store data
                         localStorage.setItem('auth_username', res.data.user.name);
                         localStorage.setItem('auth_token', res.data.user.token);
-
-
+                        localStorage.setItem('auth_expired_at', res.data.user.expired_at);
 
                         Swal.fire(
                             'Đăng nhập',

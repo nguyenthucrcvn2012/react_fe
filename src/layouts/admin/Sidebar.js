@@ -20,8 +20,9 @@ const Sidebar = () => {
                 if(res.data.status === 200)
                 {
                     // Remove store data
-                    localStorage.removeItem('auth_username', res.data.username);
-                    localStorage.removeItem('auth_token', res.data.token);
+                    localStorage.removeItem('auth_username');
+                    localStorage.removeItem('auth_token');
+                    localStorage.removeItem('auth_expired_at');
                     Swal.fire(
                         'Đăng xuất',
                         'Thành công!',

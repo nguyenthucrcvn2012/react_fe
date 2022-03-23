@@ -3,11 +3,40 @@ import ReactDOM from 'react-dom';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 
-
-
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.min.js';
 
+import axios from 'axios';
+
+// For GET requests
+axios.interceptors.request.use(
+  (req) => {
+     // Add configurations here
+     console.log('susccess')
+     return req
+
+  },
+  (err) => {
+    localStorage.removeItem('auth_username');
+    localStorage.removeItem('auth_expired_at');
+    localStorage.removeItem('auth_token');
+  }
+);
+
+// For POST requests
+axios.interceptors.response.use(
+  (res) => {
+
+     // Add configurations here
+     console.log('susccess')
+     return res
+  },
+  (err) => {
+    localStorage.removeItem('auth_username');
+    localStorage.removeItem('auth_expired_at');
+    localStorage.removeItem('auth_token');
+  }
+);
 ReactDOM.render(
   <React.StrictMode>
     <App />
