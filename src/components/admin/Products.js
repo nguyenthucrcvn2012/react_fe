@@ -8,7 +8,7 @@ import Navigation from '../../layouts/admin/Navigation';
 import Loading from '../../layouts/admin/Loading';
 import axios from 'axios';
 import Swal from "sweetalert2";
-import NumberFormat from 'react-number-format';
+// import NumberFormat from 'react-number-format';
 
 function Product() {
 
