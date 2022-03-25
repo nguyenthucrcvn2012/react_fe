@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { Modal, Button, Tooltip } from "react-bootstrap";
+import { Modal, Button, Tooltip, Form } from "react-bootstrap";
 
 import Footer from "./../../layouts/admin/Footer";
 import Navbar from "./../../layouts/admin/Navbar";
@@ -11,13 +11,19 @@ import Swal from "sweetalert2";
 // import NumberFormat from 'react-number-format';
 
 function Product() {
-
+    const HETHANG = 2;
+    const NGUNGBAN = 0;
+    const DANGBAN = 1;
+    const [validated, setValidated] = useState(false);
     const [loading, setLoading] = useState(true); // loading
     const [products, setProducts] = useState([]); // Products
     const [pagination, setPagination] = useState({});// Phân trang
     const [titleForm, setTitleForm] = useState('Thêm mới sản phẩm') //Tiêu đề form
     const [isResearch, setIsResearch] = useState(true) // kiểm tra data có phải đã được tìm kiếm hay không
-    const [productImage, setProductImage] = useState()
+    const [productImage, setProductImage] = useState({
+        image: null,
+        name: ''
+    })
     const [isDeleteImage, setIsDeleteImage] = useState(false)
     const [inputSearch, setInputSearch] = useState({
         product_name: '',
@@ -98,13 +104,20 @@ function Product() {
     };
     //Hình ảnh sp
     const handleImage = (e) => {
-        setProductImage(e.target.files[0])
+        setProductImage({
+            image : e.target.files[0],
+            name : e.target.files[0].name
+        })
         onChangePicture(e)
+        console.log(productImage.name)
     }
     //Xóa hình ảnh
     const removeImage = () => {
         setImgData(noimg)
-        setProductImage()
+        setProductImage({
+            image: null,
+            name: ''
+        })
         setIsDeleteImage(true)
         // document.getElementById('file').value = "";
     }
@@ -187,9 +200,10 @@ function Product() {
                     <td>{formatPrice(pro.product_price)}</td>
                     {/* <td>{moment(pro.created_at).format('YYYY MM DD')}</td> */}
                     <td>
-                        {pro.is_sales === 1 ?
-                            <span className='text-success'>Đang bán</span> :
-                            <span className='text-danger'>Ngừng bán</span>
+                        {pro.is_sales === DANGBAN ?
+                            <span className='text-success'>Đang bán</span> : pro.is_sales  === NGUNGBAN ?
+                            <span className='text-danger'>Ngừng bán</span> :
+                            <span className='text-danger'>Hết hàng</span>
                         }
                     </td>
                     <td className="text-center">
@@ -219,7 +233,7 @@ function Product() {
         formData.append('product_price', product.product_price);
         formData.append('description', product.description);
         formData.append('is_sales', product.is_sales);
-        formData.append('product_image', productImage);
+        formData.append('product_image', productImage.image);
         formData.append('is_delete_image', isDeleteImage);
 
         axios.post(`/api/products/${product.product_id}/update`, formData).then(res => {
@@ -261,15 +275,12 @@ function Product() {
         formData.append('product_price', product.product_price);
         formData.append('description', product.description);
         formData.append('is_sales', product.is_sales);
-        formData.append('product_image', productImage);
-
-        console.log(formData)
+        formData.append('product_image', productImage.image);
 
         axios.post(`/api/products/store`, formData).then(res => {
             if (res.data.status === 200) {
 
                 Swal.fire('Thêm mới', res.data.message, 'success')
-
                 loadPage(numPage)
                 setShow(false)
                 resetInput()
@@ -284,6 +295,7 @@ function Product() {
                 setProduct({ ...product, error_list: res.data.validation_errors })
             }
         });
+        setValidated(true);
     }
 
     // Xử lí phân trang
@@ -395,6 +407,17 @@ function Product() {
 
     }, []);
 
+    const handleSubmit = (event) => {
+        const form = event.currentTarget;
+        if (form.checkValidity() === false) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+    
+        setValidated(true);
+        submitStoreProduct(event);
+      };
+
     return (
         <div className="sb-nav-fixed">
             <Modal size="lg" show={show} onHide={handleClose}>
@@ -402,7 +425,7 @@ function Product() {
                     <Modal.Title>{titleForm}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <form className="form-product" encType="multipart/form-data">
+                    <Form  className="form-product needs-validation" validated={validated} encType="multipart/form-data" onSubmit={handleSubmit}>
                         <div className="row">
                             <div className="col-md-7">
                                 <table className="w-100">
@@ -410,15 +433,21 @@ function Product() {
                                         <th scope="col">Tên sản phẩm <span className='text-danger'>*</span></th>
                                         <th scope="col">
                                             <input type="text" name="product_name" value={product.product_name} onChange={handleInput}
-                                                className="form-control" placeholder="Nhập tên sản phẩm" />
+                                                className="form-control" placeholder="Nhập tên sản phẩm" required />
+                                                {/* <div class="valid-feedback">
+                                                    Looks good!
+                                                </div>
+                                                <div class="invalid-feedback">
+                                                    Please choose a username.
+                                                </div> */}
                                             <span className="text-alert">{product.error_list.product_name}</span>
                                         </th>
                                     </tr>
                                     <tr>
                                         <th scope="row">Giá bán <span className='text-danger'>*</span></th>
                                         <th scope="col">
-                                            <input type="number"  name="product_price" value={Number(product.product_price).toFixed(0)} onChange={handleInput}
-                                               className="form-control" min="0" placeholder="Nhập giá bán" />
+                                            <input type="number" defaultValue={0} name="product_price" value={product.product_price ? Number(product.product_price).toFixed(0) : 0} onChange={handleInput}
+                                               className="form-control" min="0" placeholder="Nhập giá bán" required/>
                                         
                                             <span className="text-alert">{product.error_list.product_price}</span>
                                         </th>
@@ -435,11 +464,18 @@ function Product() {
                                         <th scope="row">Trạng thái <span className='text-danger'>*</span></th>
                                         <th scope="col">
                                             <select className="form-select" onChange={handleInput} name="is_sales"
-                                                aria-label="Default select example">
+                                                aria-label="Default select example" required>
                                                 <option value="" >Chọn trạng thái</option>
-                                                <option value="1" selected={product.is_sales === 1 ? 'selected' : ''}>Đang bán</option>
-                                                <option value="0" selected={product.is_sales === 0 ? 'selected' : ''}>Ngừng bán</option>
+                                                <option value="1" selected={product.is_sales ===  DANGBAN ? 'selected' : ''}>Đang bán</option>
+                                                <option value="0" selected={product.is_sales === NGUNGBAN ? 'selected' : ''}>Ngừng bán</option>
+                                                <option value="2" selected={product.is_sales === HETHANG ? 'selected' : ''}>Hết hàng</option>
                                             </select>
+                                            {/* <div class="valid-feedback">
+                                                Looks good!
+                                            </div>
+                                            <div class="invalid-feedback">
+                                                Please choose a username.
+                                            </div> */}
                                             <span className="text-alert">{product.error_list.is_sales}</span>
                                         </th>
                                     </tr>
@@ -456,7 +492,7 @@ function Product() {
                                 <div className="box-upload-image mt-3">
                                     <button type='button' className='btn-upload btn-primary' onClick={chooseImage}>Upload</button>
                                     <button type='button' className='btn-remove btn-danger' onClick={removeImage}>Xóa file</button>
-                                    <input type="text" placeholder='Tên file' disabled />
+                                    <input type="text" placeholder='Tên file' value={productImage.name} disabled />
                                 </div>
                             </div>
                         </div>
@@ -464,11 +500,12 @@ function Product() {
                             <Button variant="secondary" onClick={handleClose}>
                                 Đóng
                             </Button>
-                            <Button variant="primary" onClick={product.product_id !== '' ? submitUpdateProduct : submitStoreProduct} >
+                            <Button variant="primary" type="submit">
+                            {/* onClick={product.product_id !== '' ? submitUpdateProduct : submitStoreProduct}  */}
                                 Lưu
                             </Button>
                         </Modal.Footer>
-                    </form>
+                    </Form>
                 </Modal.Body>
 
             </Modal>
@@ -508,8 +545,9 @@ function Product() {
                                                     <label htmlFor="status">Trạng thái</label>
                                                     <select className="form-select" name="is_sales" onChange={handleInputSearch} aria-label="Default select example">
                                                         <option value="" >Chọn trạng thái</option>
-                                                        <option value="1">Đang bán</option>
-                                                        <option value="0">Ngừng bán</option>
+                                                        <option value={DANGBAN}>Đang bán</option>
+                                                        <option value={NGUNGBAN}>Ngừng bán</option>
+                                                        <option value={HETHANG}>Hết hàng</option>
                                                     </select>
                                                 </div>
                                                 <div className="col-md-3 col-6 mb-1">
